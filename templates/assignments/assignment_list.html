@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Assignments Directory | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-lines text-primary me-2"></i>Assignments Management</h1>
+            <p class="text-muted small m-0">Institutional repository of coursework assignments.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 text-center py-5" style="background: var(--card);">
+        <i class="fa-solid fa-folder-tree fs-1 text-primary mb-3"></i>
+        <h3 class="h5 fw-bold">Assignment Records</h3>
+        <p class="text-muted small m-0">Assignments are linked to respective subjects and managed directly by course faculty.</p>
+    </div>
+</div>
+{% endblock %}

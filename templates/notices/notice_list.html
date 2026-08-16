@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Notices | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-bullhorn text-primary me-2"></i>Campus Notices & Announcements</h1>
+            <p class="text-muted small m-0">Official notices published by administration and academic departments.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-3" style="background: var(--card);">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h3 class="h6 fw-bold m-0 text-primary">Mid-Term Examination Schedule Academic Session 2026</h3>
+            <span class="badge bg-primary-subtle text-primary small">Academic Notice</span>
+        </div>
+        <p class="text-muted small mb-2">The mid-term examination timetable for all department courses has been finalized. Mid-term assessments will commence as per the published schedule in August 2026.</p>
+        <div class="text-muted extra-small">Posted on: 15 August 2026 | Issued by: Academic Controller</div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h3 class="h6 fw-bold m-0 text-success">Campus Infrastructure & Library System Upgrade</h3>
+            <span class="badge bg-success-subtle text-success small">General Notice</span>
+        </div>
+        <p class="text-muted small mb-2">The central college digital library and ERP student portal have been updated with enhanced dark mode support and optimized performance.</p>
+        <div class="text-muted extra-small">Posted on: 10 August 2026 | Issued by: Systems Admin</div>
+    </div>
+</div>
+{% endblock %}

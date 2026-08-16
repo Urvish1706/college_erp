@@ -1,0 +1,1494 @@
+{% extends "base.html" %}
+
+{% block title %}
+Faculty Management | College ERP
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header" data-aos="fade-down">
+
+    <div>
+        <span class="eyebrow">Academic Management</span>
+
+        <h2>Faculty Management</h2>
+
+        <p>
+            Manage faculty members, departments and subject assignments.
+        </p>
+    </div>
+
+    <div class="header-actions">
+
+        <a
+            href="{% url 'faculty_assign_subject' %}"
+            class="btn btn-outline-primary"
+        >
+            <i class="fa-solid fa-book me-2"></i>
+            Assign Subject
+        </a>
+
+        <a
+            href="{% url 'faculty_create' %}"
+            class="btn btn-primary"
+        >
+            <i class="fa-solid fa-user-plus me-2"></i>
+            Add Faculty
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- STAT CARDS -->
+<!-- ================================================= -->
+
+<div class="stats-grid" data-aos="fade-up">
+
+    <div class="stat-card">
+
+        <div class="stat-icon blue">
+            <i class="fa-solid fa-chalkboard-user"></i>
+        </div>
+
+        <div>
+            <span>Total Faculty</span>
+            <h3>{{ faculty_members.paginator.count }}</h3>
+        </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon green">
+            <i class="fa-solid fa-user-check"></i>
+        </div>
+
+        <div>
+            <span>Active Faculty</span>
+
+            <h3>
+                {{ faculty_members.paginator.count }}
+            </h3>
+        </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon purple">
+            <i class="fa-solid fa-building-columns"></i>
+        </div>
+
+        <div>
+            <span>Departments</span>
+            <h3>{{ departments|length }}</h3>
+        </div>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <div class="stat-icon orange">
+            <i class="fa-solid fa-book-open"></i>
+        </div>
+
+        <div>
+            <span>Management</span>
+            <h3>ERP</h3>
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- SEARCH / FILTER -->
+<!-- ================================================= -->
+
+<div
+    class="filter-card"
+    data-aos="fade-up"
+    data-aos-delay="100"
+>
+
+    <form
+        method="GET"
+        class="row g-3"
+    >
+
+        <!-- SEARCH -->
+
+        <div class="col-lg-5">
+
+            <label class="form-label">
+                Search Faculty
+            </label>
+
+            <div class="search-box">
+
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ search }}"
+                    class="form-control"
+                    placeholder="Faculty ID, name or email..."
+                >
+
+            </div>
+
+        </div>
+
+
+        <!-- DEPARTMENT -->
+
+        <div class="col-lg-3">
+
+            <label class="form-label">
+                Department
+            </label>
+
+            <select
+                name="department"
+                class="form-select"
+            >
+
+                <option value="">
+                    All Departments
+                </option>
+
+                {% for department in departments %}
+
+                <option
+                    value="{{ department.id }}"
+                    {% if selected_department == department.id|stringformat:"s" %}
+                        selected
+                    {% endif %}
+                >
+
+                    {{ department.name }}
+
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+
+        <!-- STATUS -->
+
+        <div class="col-lg-2">
+
+            <label class="form-label">
+                Status
+            </label>
+
+            <select
+                name="status"
+                class="form-select"
+            >
+
+                <option value="">
+                    All Status
+                </option>
+
+                <option
+                    value="active"
+                    {% if selected_status == "active" %}
+                        selected
+                    {% endif %}
+                >
+                    Active
+                </option>
+
+                <option
+                    value="inactive"
+                    {% if selected_status == "inactive" %}
+                        selected
+                    {% endif %}
+                >
+                    Inactive
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- FILTER BUTTON -->
+
+        <div class="col-lg-2 d-flex align-items-end">
+
+            <button
+                type="submit"
+                class="btn btn-primary w-100"
+            >
+
+                <i class="fa-solid fa-filter me-2"></i>
+
+                Filter
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- FACULTY TABLE -->
+<!-- ================================================= -->
+
+<div
+    class="faculty-card"
+    data-aos="fade-up"
+    data-aos-delay="150"
+>
+
+    <div class="card-heading">
+
+        <div>
+
+            <h5>
+                Faculty Members
+            </h5>
+
+            <span>
+                {{ faculty_members.paginator.count }}
+                faculty members found
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table faculty-table align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Faculty
+                    </th>
+
+                    <th>
+                        Faculty ID
+                    </th>
+
+                    <th>
+                        Department
+                    </th>
+
+                    <th>
+                        Qualification
+                    </th>
+
+                    <th>
+                        Experience
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for faculty in faculty_members %}
+
+                <tr data-aos="fade-up">
+
+                    <!-- FACULTY -->
+
+                    <td>
+
+                        <div class="faculty-info">
+
+                            {% if faculty.profile_photo %}
+
+                            <img
+                                src="{{ faculty.profile_photo.url }}"
+                                class="faculty-avatar"
+                                alt="{{ faculty.full_name }}"
+                            >
+
+                            {% else %}
+
+                            <div class="faculty-avatar initials">
+
+                                {{ faculty.first_name|first|upper }}
+
+                            </div>
+
+                            {% endif %}
+
+
+                            <div>
+
+                                <strong>
+                                    {{ faculty.full_name }}
+                                </strong>
+
+                                <small>
+                                    {{ faculty.email }}
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- FACULTY ID -->
+
+                    <td>
+
+                        <span class="faculty-id">
+
+                            {{ faculty.faculty_id }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- DEPARTMENT -->
+
+                    <td>
+
+                        <span class="department-name">
+
+                            {{ faculty.department.name }}
+
+                        </span>
+
+                    </td>
+
+
+                    <!-- QUALIFICATION -->
+
+                    <td>
+
+                        {% if faculty.qualification %}
+
+                            {{ faculty.qualification }}
+
+                        {% else %}
+
+                            <span class="muted-text">
+                                Not specified
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- EXPERIENCE -->
+
+                    <td>
+
+                        <div class="experience">
+
+                            <i class="fa-solid fa-briefcase"></i>
+
+                            {{ faculty.experience_years }}
+
+                            {% if faculty.experience_years == 1 %}
+                                Year
+                            {% else %}
+                                Years
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- STATUS -->
+
+                    <td>
+
+                        {% if faculty.is_active %}
+
+                        <span class="status active">
+
+                            <span class="status-dot"></span>
+
+                            Active
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="status inactive">
+
+                            <span class="status-dot"></span>
+
+                            Inactive
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- ACTIONS -->
+
+                    <td>
+
+                        <div class="action-buttons">
+
+                            <a
+                                href="{% url 'faculty_detail' faculty.pk %}"
+                                class="action-btn view"
+                                title="View Faculty"
+                            >
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </a>
+
+
+                            <a
+                                href="{% url 'faculty_update' faculty.pk %}"
+                                class="action-btn edit"
+                                title="Edit Faculty"
+                            >
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </a>
+
+
+                            <a
+                                href="{% url 'faculty_delete' faculty.pk %}"
+                                class="action-btn delete"
+                                title="Delete Faculty"
+                            >
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="empty-state"
+                    >
+
+                        <div class="empty-icon">
+
+                            <i class="fa-solid fa-chalkboard-user"></i>
+
+                        </div>
+
+                        <h5>
+                            No Faculty Found
+                        </h5>
+
+                        <p>
+                            Try changing your search or filters.
+                        </p>
+
+                        <a
+                            href="{% url 'faculty_create' %}"
+                            class="btn btn-primary"
+                        >
+
+                            <i class="fa-solid fa-user-plus me-2"></i>
+
+                            Add Faculty
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- PAGINATION -->
+    <!-- ================================================= -->
+
+    {% if faculty_members.has_other_pages %}
+
+    <div class="pagination-wrapper">
+
+        <div class="pagination-info">
+
+            Page
+            <strong>
+                {{ faculty_members.number }}
+            </strong>
+            of
+            <strong>
+                {{ faculty_members.paginator.num_pages }}
+            </strong>
+
+        </div>
+
+
+        <div class="pagination-buttons">
+
+            {% if faculty_members.has_previous %}
+
+            <a
+                href="?page={{ faculty_members.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}"
+                class="page-btn"
+            >
+
+                <i class="fa-solid fa-chevron-left"></i>
+
+            </a>
+
+            {% endif %}
+
+
+            <span class="current-page">
+
+                {{ faculty_members.number }}
+
+            </span>
+
+
+            {% if faculty_members.has_next %}
+
+            <a
+                href="?page={{ faculty_members.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if selected_department %}&department={{ selected_department }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}"
+                class="page-btn"
+            >
+
+                <i class="fa-solid fa-chevron-right"></i>
+
+            </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+.page-header {
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    margin-bottom:28px;
+
+}
+
+
+.eyebrow {
+
+    display:inline-block;
+
+    color:var(--primary);
+
+    font-size:11px;
+
+    font-weight:800;
+
+    letter-spacing:1.2px;
+
+    text-transform:uppercase;
+
+    margin-bottom:4px;
+
+}
+
+
+.page-header h2 {
+
+    margin:0;
+
+    font-size:26px;
+
+    font-weight:800;
+
+}
+
+
+.page-header p {
+
+    margin:6px 0 0;
+
+    color:var(--muted);
+
+    font-size:13px;
+
+}
+
+
+.header-actions {
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+
+/* =========================================
+   STATS
+========================================= */
+
+.stats-grid {
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap:16px;
+
+    margin-bottom:22px;
+
+}
+
+
+.stat-card {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    padding:20px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:18px;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+
+}
+
+
+.stat-card:hover {
+
+    transform:translateY(-5px);
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,.07);
+
+}
+
+
+.stat-icon {
+
+    width:48px;
+
+    height:48px;
+
+    border-radius:14px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:19px;
+
+}
+
+
+.stat-icon.blue {
+
+    background:rgba(59,130,246,.12);
+
+    color:#2563eb;
+
+}
+
+
+.stat-icon.green {
+
+    background:rgba(34,197,94,.12);
+
+    color:#16a34a;
+
+}
+
+
+.stat-icon.purple {
+
+    background:rgba(139,92,246,.12);
+
+    color:#7c3aed;
+
+}
+
+
+.stat-icon.orange {
+
+    background:rgba(249,115,22,.12);
+
+    color:#ea580c;
+
+}
+
+
+.stat-card span {
+
+    display:block;
+
+    color:var(--muted);
+
+    font-size:11px;
+
+    font-weight:600;
+
+}
+
+
+.stat-card h3 {
+
+    margin:3px 0 0;
+
+    font-size:22px;
+
+    font-weight:800;
+
+}
+
+
+/* =========================================
+   FILTER
+========================================= */
+
+.filter-card {
+
+    padding:22px;
+
+    margin-bottom:20px;
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:20px;
+
+}
+
+
+.form-label {
+
+    display:block;
+
+    margin-bottom:7px;
+
+    font-size:11px;
+
+    font-weight:700;
+
+    color:var(--text);
+
+}
+
+
+.search-box {
+
+    position:relative;
+
+}
+
+
+.search-box i {
+
+    position:absolute;
+
+    left:14px;
+
+    top:50%;
+
+    transform:translateY(-50%);
+
+    color:var(--muted);
+
+    z-index:2;
+
+}
+
+
+.search-box input {
+
+    padding-left:40px;
+
+}
+
+
+/* =========================================
+   TABLE
+========================================= */
+
+.faculty-card {
+
+    background:var(--card);
+
+    border:1px solid var(--border);
+
+    border-radius:20px;
+
+    overflow:hidden;
+
+}
+
+
+.card-heading {
+
+    display:flex;
+
+    justify-content:space-between;
+
+    padding:22px 22px 16px;
+
+}
+
+
+.card-heading h5 {
+
+    margin:0;
+
+    font-size:16px;
+
+    font-weight:800;
+
+}
+
+
+.card-heading span {
+
+    display:block;
+
+    margin-top:4px;
+
+    color:var(--muted);
+
+    font-size:11px;
+
+}
+
+
+.faculty-table {
+
+    margin:0;
+
+}
+
+
+.faculty-table thead th {
+
+    padding:13px 18px;
+
+    background:rgba(79,70,229,.045);
+
+    border-bottom:1px solid var(--border);
+
+    color:var(--muted);
+
+    font-size:10px;
+
+    font-weight:800;
+
+    letter-spacing:.6px;
+
+    text-transform:uppercase;
+
+    white-space:nowrap;
+
+}
+
+
+.faculty-table tbody td {
+
+    padding:15px 18px;
+
+    border-bottom:1px solid var(--border);
+
+    font-size:12px;
+
+}
+
+
+.faculty-table tbody tr {
+
+    transition:
+        background .2s ease;
+
+}
+
+
+.faculty-table tbody tr:hover {
+
+    background:rgba(79,70,229,.025);
+
+}
+
+
+/* =========================================
+   FACULTY INFO
+========================================= */
+
+.faculty-info {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    min-width:190px;
+
+}
+
+
+.faculty-avatar {
+
+    width:43px;
+
+    height:43px;
+
+    min-width:43px;
+
+    border-radius:12px;
+
+    object-fit:cover;
+
+}
+
+
+.faculty-avatar.initials {
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    background:rgba(79,70,229,.1);
+
+    color:var(--primary);
+
+    font-weight:800;
+
+    font-size:16px;
+
+}
+
+
+.faculty-info strong {
+
+    display:block;
+
+    font-size:12px;
+
+    font-weight:800;
+
+}
+
+
+.faculty-info small {
+
+    display:block;
+
+    margin-top:3px;
+
+    color:var(--muted);
+
+    font-size:10px;
+
+}
+
+
+/* =========================================
+   ID
+========================================= */
+
+.faculty-id {
+
+    display:inline-block;
+
+    padding:6px 9px;
+
+    border-radius:8px;
+
+    background:rgba(79,70,229,.08);
+
+    color:var(--primary);
+
+    font-size:10px;
+
+    font-weight:800;
+
+}
+
+
+.department-name {
+
+    font-weight:700;
+
+}
+
+
+.muted-text {
+
+    color:var(--muted);
+
+    font-size:11px;
+
+}
+
+
+.experience {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:7px;
+
+    color:var(--muted);
+
+    font-size:11px;
+
+}
+
+
+.experience i {
+
+    color:var(--primary);
+
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
+
+.status {
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    padding:6px 10px;
+
+    border-radius:20px;
+
+    font-size:10px;
+
+    font-weight:800;
+
+}
+
+
+.status-dot {
+
+    width:6px;
+
+    height:6px;
+
+    border-radius:50%;
+
+    display:inline-block;
+
+}
+
+
+.status.active {
+
+    color:#15803d;
+
+    background:#dcfce7;
+
+}
+
+
+.status.active .status-dot {
+
+    background:#16a34a;
+
+}
+
+
+.status.inactive {
+
+    color:#b91c1c;
+
+    background:#fee2e2;
+
+}
+
+
+.status.inactive .status-dot {
+
+    background:#dc2626;
+
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.action-buttons {
+
+    display:flex;
+
+    gap:6px;
+
+}
+
+
+.action-btn {
+
+    width:32px;
+
+    height:32px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:9px;
+
+    text-decoration:none;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease;
+
+}
+
+
+.action-btn:hover {
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 5px 12px rgba(0,0,0,.08);
+
+}
+
+
+.action-btn.view {
+
+    background:#e0e7ff;
+
+    color:#4f46e5;
+
+}
+
+
+.action-btn.edit {
+
+    background:#fef3c7;
+
+    color:#b45309;
+
+}
+
+
+.action-btn.delete {
+
+    background:#fee2e2;
+
+    color:#dc2626;
+
+}
+
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.empty-state {
+
+    text-align:center;
+
+    padding:70px 20px !important;
+
+    color:var(--muted);
+
+}
+
+
+.empty-icon {
+
+    width:65px;
+
+    height:65px;
+
+    margin:0 auto 15px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:18px;
+
+    background:rgba(79,70,229,.08);
+
+    color:var(--primary);
+
+    font-size:25px;
+
+}
+
+
+.empty-state h5 {
+
+    margin:0 0 5px;
+
+    color:var(--text);
+
+    font-weight:800;
+
+}
+
+
+.empty-state p {
+
+    margin:0 0 18px;
+
+    font-size:12px;
+
+}
+
+
+/* =========================================
+   PAGINATION
+========================================= */
+
+.pagination-wrapper {
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    padding:16px 20px;
+
+    border-top:1px solid var(--border);
+
+}
+
+
+.pagination-info {
+
+    color:var(--muted);
+
+    font-size:11px;
+
+}
+
+
+.pagination-info strong {
+
+    color:var(--text);
+
+}
+
+
+.pagination-buttons {
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+
+}
+
+
+.page-btn,
+.current-page {
+
+    width:32px;
+
+    height:32px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    border-radius:9px;
+
+    text-decoration:none;
+
+    font-size:11px;
+
+    font-weight:700;
+
+}
+
+
+.page-btn {
+
+    background:rgba(79,70,229,.08);
+
+    color:var(--primary);
+
+    transition:.2s;
+
+}
+
+
+.page-btn:hover {
+
+    transform:translateY(-2px);
+
+    background:rgba(79,70,229,.14);
+
+}
+
+
+.current-page {
+
+    background:var(--primary);
+
+    color:white;
+
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media(max-width:1100px) {
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+}
+
+
+@media(max-width:800px) {
+
+    .page-header {
+
+        flex-direction:column;
+
+        align-items:flex-start;
+
+    }
+
+
+    .header-actions {
+
+        width:100%;
+
+        flex-wrap:wrap;
+
+    }
+
+
+    .header-actions .btn {
+
+        flex:1;
+
+    }
+
+}
+
+
+@media(max-width:600px) {
+
+    .stats-grid {
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .pagination-wrapper {
+
+        flex-direction:column;
+
+        gap:12px;
+
+    }
+
+}
+
+</style>
+
+{% endblock %}

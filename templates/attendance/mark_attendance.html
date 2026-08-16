@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Mark Attendance | College ERP</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    >
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #080d1d;
+            color: #f8fafc;
+            font-family: Arial, sans-serif;
+        }
+
+        /* =========================================
+           MAIN CONTAINER
+        ========================================= */
+
+        .container-box {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 35px 25px 60px;
+        }
+
+
+        /* =========================================
+           TOP HEADER
+        ========================================= */
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 30px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .page-title i {
+            color: #6366f1;
+            margin-right: 10px;
+        }
+
+        .page-subtitle {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+
+        /* =========================================
+           BACK BUTTON
+        ========================================= */
+
+        .back-btn {
+            text-decoration: none;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: .2s;
+        }
+
+        .back-btn:hover {
+            background: #1e293b;
+            color: white;
+        }
+
+
+        /* =========================================
+           CARD
+        ========================================= */
+
+        .card-box {
+            background: #111827;
+            border: 1px solid #243047;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 22px;
+        }
+
+
+        /* =========================================
+           FILTER SECTION
+        ========================================= */
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            color: #cbd5e1;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .form-control,
+        .form-select {
+            height: 48px;
+            background: #0b1220 !important;
+            border: 1px solid #334155;
+            color: white !important;
+            border-radius: 10px;
+        }
+
+        .form-control::placeholder {
+            color: #64748b;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: #0b1220 !important;
+            color: white !important;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
+        }
+
+        .form-select option {
+            background: #111827;
+            color: white;
+        }
+
+        .load-btn {
+            height: 48px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(
+                135deg,
+                #4f46e5,
+                #7c3aed
+            );
+            color: white;
+            font-size: 12px;
+            font-weight: 800;
+            width: 100%;
+            transition: .2s;
+        }
+
+        .load-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(79, 70, 229, .25);
+        }
+
+
+        /* =========================================
+           SELECTED SUBJECT HEADER
+        ========================================= */
+
+        .attendance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .selected-subject {
+            font-size: 20px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .selected-date {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .student-count {
+            background: #1e1b4b;
+            border: 1px solid #4338ca;
+            color: #a5b4fc;
+            padding: 8px 13px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+
+        /* =========================================
+           STUDENT ROW
+        ========================================= */
+
+        .student-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+
+            padding: 16px;
+
+            background: #0d1424;
+            border: 1px solid #263247;
+
+            border-radius: 14px;
+
+            margin-bottom: 10px;
+
+            transition: .2s;
+        }
+
+        .student-row:hover {
+            border-color: #3b4a65;
+            background: #10192b;
+        }
+
+
+        /* =========================================
+           STUDENT INFO
+        ========================================= */
+
+        .student-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .student-avatar {
+            width: 45px;
+            height: 45px;
+            min-width: 45px;
+
+            border-radius: 12px;
+
+            background: linear-gradient(
+                135deg,
+                #312e81,
+                #4f46e5
+            );
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-weight: 800;
+            font-size: 15px;
+        }
+
+        .student-details {
+            min-width: 0;
+        }
+
+        .student-id {
+            color: #818cf8;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .student-name {
+            font-size: 14px;
+            font-weight: 800;
+            margin-top: 3px;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .student-course {
+            color: #64748b;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+
+
+        /* =========================================
+           STATUS BUTTONS
+        ========================================= */
+
+        .status-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .status-buttons input {
+            display: none;
+        }
+
+        .status-buttons label {
+            cursor: pointer;
+
+            min-width: 100px;
+
+            text-align: center;
+
+            padding: 10px 14px;
+
+            border-radius: 10px;
+
+            border: 1px solid #334155;
+
+            color: #94a3b8;
+
+            font-size: 11px;
+            font-weight: 800;
+
+            transition: .2s;
+        }
+
+        .status-buttons label:hover {
+            border-color: #64748b;
+        }
+
+
+        /* PRESENT */
+
+        .status-buttons input:checked + label.present {
+            background: rgba(34, 197, 94, .12);
+            border-color: #22c55e;
+            color: #86efac;
+        }
+
+
+        /* ABSENT */
+
+        .status-buttons input:checked + label.absent {
+            background: rgba(239, 68, 68, .12);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+
+        /* =========================================
+           SAVE SECTION
+        ========================================= */
+
+        .save-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+
+            margin-top: 25px;
+            padding-top: 20px;
+
+            border-top: 1px solid #1e293b;
+        }
+
+        .save-info {
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .save-info i {
+            color: #6366f1;
+            margin-right: 5px;
+        }
+
+        .save-btn {
+            border: none;
+            border-radius: 10px;
+
+            background: linear-gradient(
+                135deg,
+                #4f46e5,
+                #7c3aed
+            );
+
+            color: white;
+
+            padding: 12px 25px;
+
+            font-size: 12px;
+            font-weight: 800;
+
+            transition: .2s;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 12px 25px rgba(79, 70, 229, .3);
+        }
+
+
+        /* =========================================
+           EMPTY STATE
+        ========================================= */
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            width: 70px;
+            height: 70px;
+
+            margin: 0 auto 18px;
+
+            border-radius: 20px;
+
+            background: #1e293b;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 27px;
+        }
+
+        .empty h4 {
+            color: #cbd5e1;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .empty p {
+            font-size: 12px;
+        }
+
+
+        /* =========================================
+           ALERT
+        ========================================= */
+
+        .alert {
+            border-radius: 12px;
+            font-size: 12px;
+            border: none;
+        }
+
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 800px) {
+
+            .container-box {
+                padding: 20px 15px 40px;
+            }
+
+            .page-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .attendance-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .student-row {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .student-info {
+                width: 100%;
+            }
+
+            .status-buttons {
+                width: 100%;
+            }
+
+            .status-buttons label {
+                flex: 1;
+            }
+
+            .save-section {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            .save-btn {
+                width: 100%;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container-box">
+
+
+    <!-- =========================================
+         PAGE HEADER
+    ========================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1 class="page-title">
+
+                <i class="fa-solid fa-calendar-check"></i>
+
+                Mark Attendance
+
+            </h1>
+
+            <div class="page-subtitle">
+
+                Mark attendance only for students of your assigned subjects.
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="{% url 'faculty_dashboard' %}"
+            class="back-btn"
+        >
+
+            <i class="fa-solid fa-arrow-left me-2"></i>
+
+            Dashboard
+
+        </a>
+
+    </div>
+
+
+    <!-- =========================================
+         MESSAGES
+    ========================================== -->
+
+    {% if messages %}
+
+        {% for message in messages %}
+
+            <div
+                class="alert
+                {% if message.tags == 'error' %}
+                    alert-danger
+                {% else %}
+                    alert-success
+                {% endif %}
+                mb-3"
+            >
+
+                <i
+                    class="fa-solid
+                    {% if message.tags == 'error' %}
+                        fa-circle-exclamation
+                    {% else %}
+                        fa-circle-check
+                    {% endif %}
+                    me-2"
+                ></i>
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+
+
+    <!-- =========================================
+         SUBJECT + DATE FILTER
+    ========================================== -->
+
+    <div class="card-box">
+
+        <div class="section-title">
+
+            <i class="fa-solid fa-filter me-2 text-primary"></i>
+
+            Select Subject & Date
+
+        </div>
+
+
+        <form method="GET">
+
+            <div class="row g-3">
+
+
+                <!-- SUBJECT -->
+
+                <div class="col-md-7">
+
+                    <label class="form-label">
+                        Subject
+                    </label>
+
+                    <select
+                        name="subject"
+                        class="form-select"
+                        required
+                    >
+
+                        <option value="">
+                            Select Assigned Subject
+                        </option>
+
+
+                        {% for subject in subjects %}
+
+                            <option
+                                value="{{ subject.id }}"
+
+                                {% if selected_subject_id|stringformat:"s" == subject.id|stringformat:"s" %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                {{ subject.name }}
+
+                                {% if subject.code %}
+                                    — {{ subject.code }}
+                                {% endif %}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <!-- DATE -->
+
+                <div class="col-md-3">
+
+                    <label class="form-label">
+                        Attendance Date
+                    </label>
+
+                    <input
+                        type="date"
+                        name="date"
+                        value="{{ selected_date }}"
+                        class="form-control"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- LOAD -->
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <button
+                        type="submit"
+                        class="load-btn"
+                    >
+
+                        <i class="fa-solid fa-users me-2"></i>
+
+                        Load Students
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+
+    <!-- =========================================
+         STUDENT ATTENDANCE
+    ========================================== -->
+
+    {% if selected_subject %}
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+
+            <input
+                type="hidden"
+                name="subject"
+                value="{{ selected_subject.id }}"
+            >
+
+
+            <input
+                type="hidden"
+                name="date"
+                value="{{ selected_date }}"
+            >
+
+
+            <div class="card-box">
+
+
+                <!-- HEADER -->
+
+                <div class="attendance-header">
+
+                    <div>
+
+                        <h2 class="selected-subject">
+
+                            {{ selected_subject.name }}
+
+                        </h2>
+
+                        <div class="selected-date">
+
+                            <i class="fa-regular fa-calendar me-1"></i>
+
+                            {{ selected_date }}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="student-count">
+
+                        <i class="fa-solid fa-users me-1"></i>
+
+                        {{ students|length }} Students
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- STUDENTS -->
+
+                {% if students %}
+
+
+                    {% for student in students %}
+
+                        <div class="student-row">
+
+
+                            <!-- STUDENT INFORMATION -->
+
+                            <div class="student-info">
+
+
+                                <div class="student-avatar">
+
+                                    {{ student.first_name|first|upper }}
+
+                                </div>
+
+
+                                <div class="student-details">
+
+                                    <div class="student-id">
+
+                                        {{ student.student_id }}
+
+                                    </div>
+
+
+                                    <div class="student-name">
+
+                                        {{ student.full_name }}
+
+                                    </div>
+
+
+                                    <div class="student-course">
+
+                                        {{ student.course.name }}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+
+                            <!-- ATTENDANCE STATUS -->
+
+                            <div class="status-buttons">
+
+
+                                <!-- PRESENT -->
+
+                                <input
+                                    type="radio"
+
+                                    name="status_{{ student.id }}"
+
+                                    id="present_{{ student.id }}"
+
+                                    value="PRESENT"
+
+                                    {% if student.attendance_status == "PRESENT" %}
+                                        checked
+                                    {% endif %}
+                                >
+
+
+                                <label
+                                    for="present_{{ student.id }}"
+
+                                    class="present"
+                                >
+
+                                    <i class="fa-solid fa-check me-1"></i>
+
+                                    Present
+
+                                </label>
+
+
+
+                                <!-- ABSENT -->
+
+                                <input
+                                    type="radio"
+
+                                    name="status_{{ student.id }}"
+
+                                    id="absent_{{ student.id }}"
+
+                                    value="ABSENT"
+
+                                    {% if student.attendance_status == "ABSENT" %}
+                                        checked
+                                    {% endif %}
+                                >
+
+
+                                <label
+                                    for="absent_{{ student.id }}"
+
+                                    class="absent"
+                                >
+
+                                    <i class="fa-solid fa-xmark me-1"></i>
+
+                                    Absent
+
+                                </label>
+
+
+                            </div>
+
+
+                        </div>
+
+                    {% endfor %}
+
+
+
+                    <!-- SAVE -->
+
+                    <div class="save-section">
+
+
+                        <div class="save-info">
+
+                            <i class="fa-solid fa-shield-halved"></i>
+
+                            Attendance is saved securely for the selected date.
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="save-btn"
+                        >
+
+                            <i class="fa-solid fa-floppy-disk me-2"></i>
+
+                            Save Attendance
+
+                        </button>
+
+
+                    </div>
+
+
+                {% else %}
+
+
+                    <!-- NO STUDENTS -->
+
+                    <div class="empty">
+
+                        <div class="empty-icon">
+
+                            <i class="fa-solid fa-user-slash"></i>
+
+                        </div>
+
+
+                        <h4>
+                            No Students Found
+                        </h4>
+
+
+                        <p>
+                            There are no active students available for this subject.
+                        </p>
+
+                    </div>
+
+
+                {% endif %}
+
+            </div>
+
+        </form>
+
+    {% else %}
+
+
+        <!-- =========================================
+             INITIAL EMPTY STATE
+        ========================================== -->
+
+        <div class="card-box">
+
+            <div class="empty">
+
+                <div class="empty-icon">
+
+                    <i class="fa-solid fa-calendar-days"></i>
+
+                </div>
+
+
+                <h4>
+                    Select a Subject
+                </h4>
+
+
+                <p>
+                    Select one of your assigned subjects and a date
+                    to load the students.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+
+</div>
+
+
+<script>
+
+    /*
+        Automatically hide success/error messages
+        after 4 seconds.
+    */
+
+    setTimeout(function () {
+
+        const alerts =
+            document.querySelectorAll(".alert");
+
+        alerts.forEach(function (alert) {
+
+            alert.style.transition = "opacity .4s";
+
+            alert.style.opacity = "0";
+
+            setTimeout(function () {
+                alert.remove();
+            }, 400);
+
+        });
+
+    }, 4000);
+
+</script>
+
+
+</body>
+
+</html>

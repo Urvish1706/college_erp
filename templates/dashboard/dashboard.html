@@ -1,0 +1,2195 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard | College ERP
+{% endblock %}
+
+
+{% block content %}
+
+<div class="dashboard-page">
+
+    <!-- ========================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================================= -->
+
+    <div class="page-header">
+
+        <div>
+
+            {% if role == "STUDENT" %}
+
+                <span class="eyebrow">
+                    Student Portal
+                </span>
+
+                <h1>
+                    Welcome,
+                    {{ student.first_name|default:user.first_name }}
+                    👋
+                </h1>
+
+                <p>
+                    Here's your academic overview.
+                </p>
+
+            {% else %}
+
+                <span class="eyebrow">
+                    Administration
+                </span>
+
+                <h1>
+                    College ERP Dashboard
+                </h1>
+
+                <p>
+                    Manage your college activities from one place.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <div class="date-box">
+
+                <i class="fa-regular fa-calendar"></i>
+
+                <span id="currentDate">
+                    Loading...
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- STUDENT DASHBOARD -->
+    <!-- ========================================= -->
+
+    {% if role == "STUDENT" %}
+
+
+        <!-- STUDENT PROFILE -->
+
+        <div
+            class="student-profile-card"
+            data-aos="fade-up"
+        >
+
+            <div class="profile-left">
+
+                <div class="profile-avatar">
+
+                    {% if student.first_name %}
+                        {{ student.first_name|first|upper }}
+                    {% else %}
+                        {{ user.username|first|upper }}
+                    {% endif %}
+
+                </div>
+
+
+                <div class="profile-info">
+
+                    <h3>
+                        {{ student.full_name|default:user.get_full_name }}
+                    </h3>
+
+                    <p>
+                        <span>Student ID:</span>
+                        {{ student.student_id }}
+                    </p>
+
+                    <p>
+                        <span>Department:</span>
+                        {{ student.department.name }}
+                    </p>
+
+                    <p>
+                        <span>Email:</span>
+                        {{ student.email }}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-details">
+
+                <div>
+
+                    <small>
+                        Course
+                    </small>
+
+                    <strong>
+                        {{ student.course.name }}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <small>
+                        Semester
+                    </small>
+
+                    <strong>
+                        {{ student.semester.name }}
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <small>
+                        Academic Year
+                    </small>
+
+                    <strong>
+                        {{ student.academic_year.name }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- STUDENT STATS -->
+        <!-- ========================================= -->
+
+        <div class="stats-grid student-stats">
+
+
+            <!-- ATTENDANCE -->
+
+            <div
+                class="stat-card attendance-stat"
+                data-aos="fade-up"
+                data-aos-delay="50"
+            >
+
+                <div class="stat-top">
+
+                    <div class="stat-icon attendance-icon">
+
+                        <i class="fa-solid fa-chart-pie"></i>
+
+                    </div>
+
+                    <span class="stat-label">
+                        Attendance
+                    </span>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ attendance_percentage|default:0 }}%
+
+                </div>
+
+
+                <div class="stat-progress">
+
+                    <div
+                        class="stat-progress-bar"
+                        style="width: {{ attendance_percentage|default:0 }}%;"
+                    ></div>
+
+                </div>
+
+
+                <div class="stat-bottom">
+
+                    <span>
+                        Overall attendance
+                    </span>
+
+                    <a href="{% url 'attendance_report' %}">
+                        View Report
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- COURSE -->
+
+            <div
+                class="stat-card"
+                data-aos="fade-up"
+                data-aos-delay="100"
+            >
+
+                <div class="stat-top">
+
+                    <div class="stat-icon course-icon">
+
+                        <i class="fa-solid fa-graduation-cap"></i>
+
+                    </div>
+
+                    <span class="stat-label">
+                        Course
+                    </span>
+
+                </div>
+
+
+                <div class="stat-value course-value">
+
+                    {{ student.course.name }}
+
+                </div>
+
+
+                <div class="stat-bottom">
+
+                    <span>
+                        Current program
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- SEMESTER -->
+
+            <div
+                class="stat-card"
+                data-aos="fade-up"
+                data-aos-delay="150"
+            >
+
+                <div class="stat-top">
+
+                    <div class="stat-icon semester-icon">
+
+                        <i class="fa-solid fa-layer-group"></i>
+
+                    </div>
+
+                    <span class="stat-label">
+                        Semester
+                    </span>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ student.semester.name }}
+
+                </div>
+
+
+                <div class="stat-bottom">
+
+                    <span>
+                        Current semester
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ACADEMIC YEAR -->
+
+            <div
+                class="stat-card"
+                data-aos="fade-up"
+                data-aos-delay="200"
+            >
+
+                <div class="stat-top">
+
+                    <div class="stat-icon year-icon">
+
+                        <i class="fa-solid fa-calendar-days"></i>
+
+                    </div>
+
+                    <span class="stat-label">
+                        Academic Year
+                    </span>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ student.academic_year.name }}
+
+                </div>
+
+
+                <div class="stat-bottom">
+
+                    <span>
+                        Current session
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- STUDENT QUICK ACTIONS -->
+        <!-- ========================================= -->
+
+        <div
+            class="section-title"
+            data-aos="fade-up"
+        >
+
+            <div>
+
+                <span class="eyebrow">
+                    Quick Access
+                </span>
+
+                <h3>
+                    Student Services
+                </h3>
+
+            </div>
+
+        </div>
+
+
+        <div class="quick-grid">
+
+
+            <!-- MY ATTENDANCE -->
+
+            <a
+                href="{% url 'attendance_report' %}"
+                class="quick-card"
+                data-aos="zoom-in"
+                data-aos-delay="50"
+            >
+
+                <div class="quick-icon purple">
+
+                    <i class="fa-solid fa-chart-line"></i>
+
+                </div>
+
+                <div>
+
+                    <strong>
+                        My Attendance
+                    </strong>
+
+                    <span>
+                        View your complete attendance
+                    </span>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-right arrow"></i>
+
+            </a>
+
+
+            <!-- MY RESULTS -->
+
+            <a
+                href="{% url 'student_results' %}"
+                class="quick-card"
+                data-aos="zoom-in"
+                data-aos-delay="100"
+            >
+
+                <div class="quick-icon blue">
+
+                    <i class="fa-solid fa-square-poll-vertical"></i>
+
+                </div>
+
+                <div>
+
+                    <strong>
+                        My Results
+                    </strong>
+
+                    <span>
+                        View your exam results
+                    </span>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-right arrow"></i>
+
+            </a>
+
+
+            <!-- MY SUBJECTS -->
+
+            <a
+                href="#"
+                class="quick-card"
+                data-aos="zoom-in"
+                data-aos-delay="100"
+            >
+
+                <div class="quick-icon blue">
+
+                    <i class="fa-solid fa-book-open"></i>
+
+                </div>
+
+                <div>
+
+                    <strong>
+                        My Subjects
+                    </strong>
+
+                    <span>
+                        View enrolled subjects
+                    </span>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-right arrow"></i>
+
+            </a>
+
+
+            <!-- ACADEMIC RECORDS -->
+
+            <a
+                href="#"
+                class="quick-card"
+                data-aos="zoom-in"
+                data-aos-delay="150"
+            >
+
+                <div class="quick-icon green">
+
+                    <i class="fa-solid fa-file-lines"></i>
+
+                </div>
+
+                <div>
+
+                    <strong>
+                        Academic Records
+                    </strong>
+
+                    <span>
+                        View academic information
+                    </span>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-right arrow"></i>
+
+            </a>
+
+
+            <!-- PROFILE -->
+
+            <a
+                href="#"
+                class="quick-card"
+                data-aos="zoom-in"
+                data-aos-delay="200"
+            >
+
+                <div class="quick-icon orange">
+
+                    <i class="fa-solid fa-user"></i>
+
+                </div>
+
+                <div>
+
+                    <strong>
+                        My Profile
+                    </strong>
+
+                    <span>
+                        Manage your profile
+                    </span>
+
+                </div>
+
+                <i class="fa-solid fa-arrow-right arrow"></i>
+
+            </a>
+
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- ATTENDANCE WARNING -->
+        <!-- ========================================= -->
+
+        {% if attendance_percentage < 75 %}
+
+        <div
+            class="warning-card"
+            data-aos="fade-up"
+        >
+
+            <div class="warning-icon">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    Attendance Alert
+                </strong>
+
+                <p>
+                    Your attendance is below 75%.
+                    Please attend classes regularly.
+                </p>
+
+            </div>
+
+
+            <a href="{% url 'attendance_report' %}">
+                View Details
+            </a>
+
+        </div>
+
+        {% endif %}
+
+
+    {% else %}
+
+
+    <!-- ========================================= -->
+    <!-- ADMIN DASHBOARD -->
+    <!-- ========================================= -->
+
+
+        <!-- ADMIN STATS -->
+
+        <div class="stats-grid">
+
+
+            <!-- STUDENTS -->
+
+            <div
+                class="stat-card"
+                data-aos="fade-up"
+                data-aos-delay="50"
+            >
+
+                <div class="stat-top">
+
+                    <div class="stat-icon blue">
+
+                        <i class="fa-solid fa-user-graduate"></i>
+
+                    </div>
+
+                    <span class="stat-label">
+                        Students
+                    </span>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ total_students }}
+
+                </div>
+
+
+                <div class="stat-bottom">
+
+                    <span>
+                        Active students
+                    </span>
+
+                    <i class="fa-solid fa-arrow-up trend-up"></i>
+
+                </div>
+
+            </div>
+
+
+            <!-- FACULTY -->
+
+            <div
+                class="stat-card"
+                data-aos="fade-up"
+                data-aos-delay="100"
+            >
+
+                <div class="stat-top">
+
+                    <div class="stat-icon purple">
+
+                        <i class="fa-solid fa-chalkboard-user"></i>
+
+                    </div>
+
+                    <span class="stat-label">
+                        Faculty
+                    </span>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ total_faculty }}
+
+                </div>
+
+
+                <div class="stat-bottom">
+
+                    <span>
+                        Active faculty
+                    </span>
+
+                    <i class="fa-solid fa-arrow-up trend-up"></i>
+
+                </div>
+
+            </div>
+
+
+            <!-- DEPARTMENTS -->
+
+            <div
+                class="stat-card"
+                data-aos="fade-up"
+                data-aos-delay="150"
+            >
+
+                <div class="stat-top">
+
+                    <div class="stat-icon green">
+
+                        <i class="fa-solid fa-building-columns"></i>
+
+                    </div>
+
+                    <span class="stat-label">
+                        Departments
+                    </span>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ total_departments }}
+
+                </div>
+
+
+                <div class="stat-bottom">
+
+                    <span>
+                        Academic departments
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- COURSES -->
+
+            <div
+                class="stat-card"
+                data-aos="fade-up"
+                data-aos-delay="200"
+            >
+
+                <div class="stat-top">
+
+                    <div class="stat-icon orange">
+
+                        <i class="fa-solid fa-book"></i>
+
+                    </div>
+
+                    <span class="stat-label">
+                        Courses
+                    </span>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ total_courses }}
+
+                </div>
+
+
+                <div class="stat-bottom">
+
+                    <span>
+                        Active courses
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- ADMIN CONTENT -->
+        <!-- ========================================= -->
+
+        <div class="dashboard-grid mt-4">
+
+
+            <!-- QUICK ACTIONS -->
+
+            <div
+                class="dashboard-card"
+                data-aos="fade-right"
+            >
+
+                <div class="card-heading">
+
+                    <div>
+
+                        <span class="eyebrow">
+                            Management
+                        </span>
+
+                        <h3>
+                            Quick Actions
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="admin-actions">
+
+
+                    <a
+                        href="/admin/students/student/"
+                        class="admin-action"
+                    >
+
+                        <div class="action-icon blue">
+
+                            <i class="fa-solid fa-user-plus"></i>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Manage Students
+                            </strong>
+
+                            <span>
+                                Add or update students
+                            </span>
+
+                        </div>
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </a>
+
+
+                    <a
+                        href="/admin/faculty/faculty/"
+                        class="admin-action"
+                    >
+
+                        <div class="action-icon purple">
+
+                            <i class="fa-solid fa-user-tie"></i>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Manage Faculty
+                            </strong>
+
+                            <span>
+                                Faculty information
+                            </span>
+
+                        </div>
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </a>
+
+
+                    <a
+                        href="/admin/academics/department/"
+                        class="admin-action"
+                    >
+
+                        <div class="action-icon green">
+
+                            <i class="fa-solid fa-building"></i>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Departments
+                            </strong>
+
+                            <span>
+                                Manage departments
+                            </span>
+
+                        </div>
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </a>
+
+
+                    <a
+                        href="/admin/faculty/facultysubjectassignment/"
+                        class="admin-action"
+                    >
+
+                        <div class="action-icon orange">
+
+                            <i class="fa-solid fa-link"></i>
+
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Faculty Assignments
+                            </strong>
+
+                            <span>
+                                Assign subjects to faculty
+                            </span>
+
+                        </div>
+
+                        <i class="fa-solid fa-chevron-right"></i>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- SYSTEM OVERVIEW -->
+
+            <div
+                class="dashboard-card"
+                data-aos="fade-left"
+            >
+
+                <div class="card-heading">
+
+                    <div>
+
+                        <span class="eyebrow">
+                            Overview
+                        </span>
+
+                        <h3>
+                            ERP Summary
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="overview-list">
+
+
+                    <div class="overview-row">
+
+                        <div class="overview-label">
+
+                            <div class="overview-icon blue">
+
+                                <i class="fa-solid fa-user-graduate"></i>
+
+                            </div>
+
+                            <span>
+                                Students
+                            </span>
+
+                        </div>
+
+                        <strong>
+                            {{ total_students }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="overview-row">
+
+                        <div class="overview-label">
+
+                            <div class="overview-icon purple">
+
+                                <i class="fa-solid fa-chalkboard-user"></i>
+
+                            </div>
+
+                            <span>
+                                Faculty
+                            </span>
+
+                        </div>
+
+                        <strong>
+                            {{ total_faculty }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="overview-row">
+
+                        <div class="overview-label">
+
+                            <div class="overview-icon green">
+
+                                <i class="fa-solid fa-building-columns"></i>
+
+                            </div>
+
+                            <span>
+                                Departments
+                            </span>
+
+                        </div>
+
+                        <strong>
+                            {{ total_departments }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="overview-row">
+
+                        <div class="overview-label">
+
+                            <div class="overview-icon orange">
+
+                                <i class="fa-solid fa-book"></i>
+
+                            </div>
+
+                            <span>
+                                Courses
+                            </span>
+
+                        </div>
+
+                        <strong>
+                            {{ total_courses }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+/* ========================================= */
+/* DASHBOARD */
+/* ========================================= */
+
+.dashboard-page {
+    animation: pageEnter .5s ease;
+}
+
+
+@keyframes pageEnter {
+
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+
+/* ========================================= */
+/* HEADER */
+/* ========================================= */
+
+.page-header {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 25px;
+
+}
+
+
+.eyebrow {
+
+    display: block;
+
+    color: var(--primary);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.2px;
+
+    text-transform: uppercase;
+
+    margin-bottom: 5px;
+
+}
+
+
+.page-header h1 {
+
+    font-size: 30px;
+
+    font-weight: 800;
+
+    margin: 0 0 5px;
+
+}
+
+
+.page-header p {
+
+    color: var(--muted);
+
+    margin: 0;
+
+}
+
+
+.date-box {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 11px 15px;
+
+    border-radius: 12px;
+
+    border: 1px solid var(--border);
+
+    background: var(--card);
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+}
+
+
+/* ========================================= */
+/* STUDENT PROFILE */
+/* ========================================= */
+
+.student-profile-card {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 25px;
+
+    padding: 25px;
+
+    margin-bottom: 25px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 20px;
+
+    background: var(--card);
+
+    box-shadow: 0 10px 30px rgba(0,0,0,.04);
+
+}
+
+
+.profile-left {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 17px;
+
+}
+
+
+.profile-avatar {
+
+    width: 65px;
+
+    height: 65px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background: var(--primary);
+
+    color: white;
+
+    font-size: 25px;
+
+    font-weight: 800;
+
+}
+
+
+.profile-info h3 {
+
+    margin: 0 0 5px;
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+}
+
+
+.profile-info p {
+
+    margin: 3px 0;
+
+    color: var(--muted);
+
+    font-size: 13px;
+
+}
+
+
+.profile-info p span {
+
+    font-weight: 600;
+
+}
+
+
+.profile-details {
+
+    display: flex;
+
+    gap: 35px;
+
+}
+
+
+.profile-details small {
+
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    margin-bottom: 4px;
+
+}
+
+
+.profile-details strong {
+
+    font-size: 14px;
+
+}
+
+
+/* ========================================= */
+/* STATS */
+/* ========================================= */
+
+.stats-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0,1fr));
+
+    gap: 18px;
+
+}
+
+
+.stat-card {
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 19px;
+
+    padding: 20px;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+
+}
+
+
+.stat-card:hover {
+
+    transform: translateY(-5px);
+
+    box-shadow: 0 15px 35px rgba(0,0,0,.08);
+
+}
+
+
+.stat-top {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+}
+
+
+.stat-icon {
+
+    width: 43px;
+
+    height: 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+}
+
+
+.stat-icon.blue,
+.quick-icon.blue,
+.action-icon.blue,
+.overview-icon.blue {
+
+    background: #e0e7ff;
+
+    color: #4f46e5;
+
+}
+
+
+.stat-icon.purple,
+.quick-icon.purple,
+.action-icon.purple,
+.overview-icon.purple {
+
+    background: #f3e8ff;
+
+    color: #9333ea;
+
+}
+
+
+.stat-icon.green,
+.quick-icon.green,
+.action-icon.green,
+.overview-icon.green {
+
+    background: #dcfce7;
+
+    color: #16a34a;
+
+}
+
+
+.stat-icon.orange,
+.quick-icon.orange,
+.action-icon.orange,
+.overview-icon.orange {
+
+    background: #ffedd5;
+
+    color: #ea580c;
+
+}
+
+
+.attendance-icon {
+
+    background: #e0e7ff;
+
+    color: #4f46e5;
+
+}
+
+
+.course-icon {
+
+    background: #f3e8ff;
+
+    color: #9333ea;
+
+}
+
+
+.semester-icon {
+
+    background: #dcfce7;
+
+    color: #16a34a;
+
+}
+
+
+.year-icon {
+
+    background: #ffedd5;
+
+    color: #ea580c;
+
+}
+
+
+.stat-label {
+
+    color: var(--muted);
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+}
+
+
+.stat-value {
+
+    margin-top: 18px;
+
+    font-size: 30px;
+
+    font-weight: 800;
+
+    line-height: 1.1;
+
+}
+
+
+.course-value {
+
+    font-size: 19px;
+
+    line-height: 1.35;
+
+}
+
+
+.stat-bottom {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 13px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+}
+
+
+.stat-bottom a {
+
+    color: var(--primary);
+
+    text-decoration: none;
+
+    font-weight: 700;
+
+}
+
+
+.stat-bottom a:hover {
+
+    text-decoration: underline;
+
+}
+
+
+.trend-up {
+
+    color: #16a34a;
+
+}
+
+
+.stat-progress {
+
+    height: 6px;
+
+    background: var(--border);
+
+    border-radius: 20px;
+
+    margin-top: 14px;
+
+    overflow: hidden;
+
+}
+
+
+.stat-progress-bar {
+
+    height: 100%;
+
+    background: var(--primary);
+
+    border-radius: 20px;
+
+    transition: width 1s ease;
+
+}
+
+
+/* ========================================= */
+/* SECTION */
+/* ========================================= */
+
+.section-title {
+
+    margin: 30px 0 15px;
+
+}
+
+
+.section-title h3 {
+
+    margin: 0;
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+}
+
+
+/* ========================================= */
+/* QUICK ACTIONS */
+/* ========================================= */
+
+.quick-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4,minmax(0,1fr));
+
+    gap: 15px;
+
+}
+
+
+.quick-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    position: relative;
+
+    padding: 18px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 17px;
+
+    background: var(--card);
+
+    color: var(--text);
+
+    text-decoration: none;
+
+    transition: .25s ease;
+
+}
+
+
+.quick-card:hover {
+
+    transform: translateY(-4px);
+
+    box-shadow: 0 12px 28px rgba(0,0,0,.07);
+
+    color: var(--text);
+
+}
+
+
+.quick-icon {
+
+    min-width: 43px;
+
+    width: 43px;
+
+    height: 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+}
+
+
+.quick-card strong {
+
+    display: block;
+
+    font-size: 14px;
+
+}
+
+
+.quick-card span {
+
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    margin-top: 3px;
+
+}
+
+
+.quick-card .arrow {
+
+    margin-left: auto;
+
+    color: var(--muted);
+
+    font-size: 12px;
+
+}
+
+
+/* ========================================= */
+/* WARNING */
+/* ========================================= */
+
+.warning-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 20px;
+
+    padding: 17px 20px;
+
+    border: 1px solid #fca5a5;
+
+    border-radius: 16px;
+
+    background: #fff7ed;
+
+}
+
+
+.warning-icon {
+
+    width: 43px;
+
+    height: 43px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: #fee2e2;
+
+    color: #dc2626;
+
+}
+
+
+.warning-card strong {
+
+    display: block;
+
+    color: #991b1b;
+
+}
+
+
+.warning-card p {
+
+    margin: 3px 0 0;
+
+    color: #7f1d1d;
+
+    font-size: 12px;
+
+}
+
+
+.warning-card a {
+
+    margin-left: auto;
+
+    color: #b91c1c;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    text-decoration: none;
+
+}
+
+
+/* ========================================= */
+/* ADMIN GRID */
+/* ========================================= */
+
+.dashboard-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1.3fr 1fr;
+
+    gap: 20px;
+
+}
+
+
+.dashboard-card {
+
+    background: var(--card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 20px;
+
+    padding: 23px;
+
+}
+
+
+.card-heading {
+
+    margin-bottom: 20px;
+
+}
+
+
+.card-heading h3 {
+
+    margin: 0;
+
+    font-size: 19px;
+
+    font-weight: 800;
+
+}
+
+
+/* ========================================= */
+/* ADMIN ACTIONS */
+/* ========================================= */
+
+.admin-actions {
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+.admin-action {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    padding: 15px 5px;
+
+    color: var(--text);
+
+    text-decoration: none;
+
+    border-bottom: 1px solid var(--border);
+
+    transition: .2s;
+
+}
+
+
+.admin-action:last-child {
+
+    border-bottom: none;
+
+}
+
+
+.admin-action:hover {
+
+    transform: translateX(4px);
+
+    color: var(--text);
+
+}
+
+
+.action-icon {
+
+    width: 42px;
+
+    height: 42px;
+
+    min-width: 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 11px;
+
+}
+
+
+.admin-action div:nth-child(2) {
+
+    flex: 1;
+
+}
+
+
+.admin-action strong {
+
+    display: block;
+
+    font-size: 13px;
+
+}
+
+
+.admin-action span {
+
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    margin-top: 3px;
+
+}
+
+
+.admin-action > i {
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+}
+
+
+/* ========================================= */
+/* OVERVIEW */
+/* ========================================= */
+
+.overview-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+.overview-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid var(--border);
+
+}
+
+
+.overview-row:last-child {
+
+    border-bottom: none;
+
+}
+
+
+.overview-label {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+}
+
+
+.overview-icon {
+
+    width: 37px;
+
+    height: 37px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+}
+
+
+.overview-row strong {
+
+    font-size: 18px;
+
+}
+
+
+/* ========================================= */
+/* RESPONSIVE */
+/* ========================================= */
+
+@media(max-width:1100px) {
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+
+    .quick-grid {
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+
+    .profile-details {
+
+        gap:18px;
+
+    }
+
+}
+
+
+@media(max-width:850px) {
+
+    .student-profile-card {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+
+    .profile-details {
+
+        width: 100%;
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .dashboard-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+
+@media(max-width:650px) {
+
+    .page-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+
+    .page-header h1 {
+
+        font-size: 24px;
+
+    }
+
+
+    .stats-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .quick-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .profile-left {
+
+        align-items: flex-start;
+
+    }
+
+
+    .profile-details {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2,1fr);
+
+    }
+
+
+    .warning-card {
+
+        align-items: flex-start;
+
+    }
+
+}
+
+
+/* ========================================= */
+/* DARK MODE */
+/* ========================================= */
+
+@media(prefers-color-scheme: dark) {
+
+    .warning-card {
+
+        background: rgba(127,29,29,.15);
+
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function()
+    {
+
+        const dateElement =
+            document.getElementById(
+                "currentDate"
+            );
+
+
+        if(dateElement)
+        {
+
+            const today =
+                new Date();
+
+
+            dateElement.textContent =
+                today.toLocaleDateString(
+                    "en-IN",
+                    {
+                        day:"2-digit",
+                        month:"short",
+                        year:"numeric"
+                    }
+                );
+
+        }
+
+
+        /* ===================================== */
+        /* ANIMATE PROGRESS BAR */
+        /* ===================================== */
+
+        setTimeout(
+            function()
+            {
+
+                document
+                    .querySelectorAll(
+                        ".stat-progress-bar"
+                    )
+                    .forEach(
+                        function(bar)
+                        {
+
+                            const width =
+                                bar.style.width;
+
+                            bar.style.width =
+                                "0%";
+
+
+                            setTimeout(
+                                function()
+                                {
+
+                                    bar.style.width =
+                                        width;
+
+                                },
+                                100
+                            );
+
+                        }
+                    );
+
+            },
+            300
+        );
+
+    }
+);
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Dashboard | College ERP{% endblock %}
+
+{% block content %}
+<div class="faculty-dashboard">
+
+    <!-- WELCOME HEADER -->
+    <div class="page-header d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <span class="eyebrow text-primary fw-bold text-uppercase small">Faculty Portal</span>
+            <h1 class="h2 fw-bold m-0">Welcome back, {{ faculty.first_name }} 👋</h1>
+            <p class="text-muted m-0">Manage your assigned academic subjects, attendance, and exam marks.</p>
+        </div>
+
+        <div class="date-box border rounded-3 px-3 py-2 text-muted small d-flex align-items-center gap-2" style="background: var(--card);">
+            <i class="fa-solid fa-id-badge text-primary"></i>
+            <span>Faculty ID: <strong>{{ faculty.faculty_id }}</strong></span>
+        </div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="50">
+            <div class="stat-card p-3 rounded-4 border" style="background: var(--card);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small">Assigned Subjects</span>
+                    <div class="stat-icon bg-primary-subtle text-primary rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold m-0">{{ assignments|length }}</div>
+                <span class="text-muted extra-small mt-2 d-block">Active subject allocations</span>
+            </div>
+        </div>
+
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="stat-card p-3 rounded-4 border" style="background: var(--card);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small">Department</span>
+                    <div class="stat-icon bg-success-subtle text-success rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-building-columns"></i>
+                    </div>
+                </div>
+                <div class="fw-bold fs-6 text-truncate m-0">{{ faculty.department.name }}</div>
+                <span class="text-muted extra-small mt-2 d-block">Dept Code: {{ faculty.department.code }}</span>
+            </div>
+        </div>
+
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="150">
+            <div class="stat-card p-3 rounded-4 border" style="background: var(--card);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small">Experience</span>
+                    <div class="stat-icon bg-warning-subtle text-warning rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </div>
+                </div>
+                <div class="h3 fw-bold m-0">{{ faculty.experience_years }} <span class="fs-6 text-muted font-normal">Years</span></div>
+                <span class="text-muted extra-small mt-2 d-block">Academic experience</span>
+            </div>
+        </div>
+
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="200">
+            <div class="stat-card p-3 rounded-4 border" style="background: var(--card);">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small">Account Status</span>
+                    <div class="stat-icon bg-info-subtle text-info rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+                <div class="h4 fw-bold m-0 text-success">{% if faculty.is_active %}Active{% else %}Inactive{% endif %}</div>
+                <span class="text-muted extra-small mt-2 d-block">System privileges enabled</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT GRID -->
+    <div class="row g-4">
+        <!-- ASSIGNED SUBJECTS -->
+        <div class="col-lg-7" data-aos="fade-right">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="h6 fw-bold m-0"><i class="fa-solid fa-book-open text-primary me-2"></i>My Assigned Subjects</h3>
+                    <span class="badge bg-primary-subtle text-primary">{{ assignments|length }} Allocated</span>
+                </div>
+
+                {% if assignments %}
+                    <div class="list-group list-group-flush">
+                        {% for assignment in assignments %}
+                            <div class="list-group-item bg-transparent border-bottom px-0 py-3 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="p-2 bg-primary-subtle text-primary rounded-3">
+                                        <i class="fa-solid fa-book fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="h6 fw-bold m-0">{{ assignment.subject.name }}</h4>
+                                        <span class="text-muted small">Code: {{ assignment.subject.code }} | Semester {{ assignment.subject.semester.number }}</span>
+                                    </div>
+                                </div>
+                                <span class="badge bg-secondary-subtle text-secondary small">Assigned</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted p-4 border rounded-3">
+                        <i class="fa-solid fa-book-open fs-2 mb-2 d-block"></i>
+                        <span>No subjects assigned to your faculty profile yet.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- FACULTY PROFILE OVERVIEW -->
+        <div class="col-lg-5" data-aos="fade-left">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+                <h3 class="h6 fw-bold mb-3"><i class="fa-solid fa-user-circle text-primary me-2"></i>Faculty Profile Overview</h3>
+                
+                <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                    {% if faculty.profile_photo %}
+                        <img src="{{ faculty.profile_photo.url }}" class="rounded-4 object-fit-cover" style="width: 60px; height: 60px;" alt="{{ faculty.full_name }}">
+                    {% else %}
+                        <div class="avatar-box bg-primary text-white fw-bold rounded-4 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 24px;">
+                            {{ faculty.first_name|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h4 class="h6 fw-bold m-0">{{ faculty.full_name }}</h4>
+                        <span class="text-muted small">Faculty ID: {{ faculty.faculty_id }}</span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between py-2 border-bottom small">
+                    <span class="text-muted">Department</span>
+                    <strong>{{ faculty.department.name }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom small">
+                    <span class="text-muted">Email</span>
+                    <strong>{{ faculty.email }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom small">
+                    <span class="text-muted">Qualification</span>
+                    <strong>{{ faculty.qualification|default:"Not specified" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 small">
+                    <span class="text-muted">Joining Date</span>
+                    <strong>{{ faculty.joining_date|date:"d M Y"|default:"N/A" }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

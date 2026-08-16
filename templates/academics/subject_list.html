@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Subjects | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-book-open text-primary me-2"></i>Curriculum Subjects</h1>
+            <p class="text-muted small m-0">View all course subjects, credit units, and semester mappings.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Subject Name</th>
+                        <th>Code</th>
+                        <th>Course</th>
+                        <th>Semester</th>
+                        <th>Type</th>
+                        <th>Credits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in subjects %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ sub.name }}</strong></td>
+                        <td><span class="badge bg-secondary-subtle text-secondary">{{ sub.code }}</span></td>
+                        <td>{{ sub.course.name }}</td>
+                        <td>{{ sub.semester.name }}</td>
+                        <td><span class="badge bg-info-subtle text-info">{{ sub.get_subject_type_display }}</span></td>
+                        <td>{{ sub.credits }} Credits</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No subjects found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,220 @@
+<aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-logo">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>College ERP</span>
+    </div>
+
+    {% if user.is_superuser or user.profile.role == "ADMIN" %}
+
+        <!-- ========================================= -->
+        <!-- ADMIN SIDEBAR -->
+        <!-- ========================================= -->
+
+        <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-gauge"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'student_list' %}" class="sidebar-link {% if 'student' in request.resolver_match.url_name and request.resolver_match.url_name != 'student_attendance' and request.resolver_match.url_name != 'student_results' %}active{% endif %}">
+            <i class="fa-solid fa-user-graduate"></i>
+            <span>Students</span>
+        </a>
+
+        <a href="{% url 'faculty_list' %}" class="sidebar-link {% if 'faculty' in request.resolver_match.url_name and request.resolver_match.url_name != 'faculty_dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-chalkboard-user"></i>
+            <span>Faculty</span>
+        </a>
+
+        <a href="{% url 'department_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'department_list' %}active{% endif %}">
+            <i class="fa-solid fa-building"></i>
+            <span>Departments</span>
+        </a>
+
+        <a href="{% url 'course_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'course_list' %}active{% endif %}">
+            <i class="fa-solid fa-book"></i>
+            <span>Courses</span>
+        </a>
+
+        <a href="{% url 'academic_year_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'academic_year_list' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Academic Years</span>
+        </a>
+
+        <a href="{% url 'semester_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'semester_list' %}active{% endif %}">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>Semesters</span>
+        </a>
+
+        <a href="{% url 'subject_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'subject_list' %}active{% endif %}">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Subjects</span>
+        </a>
+
+        <a href="{% url 'attendance_history' %}" class="sidebar-link {% if request.resolver_match.url_name == 'attendance_history' or request.resolver_match.url_name == 'mark_attendance' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Attendance</span>
+        </a>
+
+        <a href="{% url 'exam_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'exam_list' %}active{% endif %}">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Exams</span>
+        </a>
+
+        <a href="{% url 'result_entry' %}" class="sidebar-link {% if request.resolver_match.url_name == 'result_entry' %}active{% endif %}">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Results</span>
+        </a>
+
+        <a href="{% url 'assignment_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'assignment_list' %}active{% endif %}">
+            <i class="fa-solid fa-file-lines"></i>
+            <span>Assignments</span>
+        </a>
+
+        <a href="{% url 'fee_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'fee_list' %}active{% endif %}">
+            <i class="fa-solid fa-money-bill"></i>
+            <span>Fees</span>
+        </a>
+
+        <a href="{% url 'notice_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span>Notices</span>
+        </a>
+
+        <a href="{% url 'reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Reports</span>
+        </a>
+
+        <a href="/admin/" class="sidebar-link" target="_blank">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>Admin Panel</span>
+        </a>
+
+        <a href="{% url 'logout' %}" class="sidebar-link text-danger mt-3">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+
+
+    {% elif user.faculty_profile or user.profile.role == "FACULTY" %}
+
+        <!-- ========================================= -->
+        <!-- FACULTY SIDEBAR -->
+        <!-- ========================================= -->
+
+        <a href="{% url 'faculty_dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-gauge"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'faculty_detail' %}active{% endif %}">
+            <i class="fa-solid fa-user"></i>
+            <span>My Profile</span>
+        </a>
+
+        <a href="{% url 'faculty_dashboard' %}" class="sidebar-link">
+            <i class="fa-solid fa-book"></i>
+            <span>My Subjects</span>
+        </a>
+
+        <a href="{% url 'mark_attendance' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mark_attendance' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Mark Attendance</span>
+        </a>
+
+        <a href="{% url 'attendance_history' %}" class="sidebar-link {% if request.resolver_match.url_name == 'attendance_history' %}active{% endif %}">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Attendance History</span>
+        </a>
+
+        <a href="{% url 'result_entry' %}" class="sidebar-link {% if request.resolver_match.url_name == 'result_entry' %}active{% endif %}">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Enter Results</span>
+        </a>
+
+        <a href="{% url 'faculty_timetable' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_timetable' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>My Timetable</span>
+        </a>
+
+        <a href="{% url 'faculty_assignments' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_assignments' %}active{% endif %}">
+            <i class="fa-solid fa-file-lines"></i>
+            <span>Assignments</span>
+        </a>
+
+        <a href="{% url 'faculty_exams' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_exams' %}active{% endif %}">
+            <i class="fa-solid fa-pen"></i>
+            <span>Exams</span>
+        </a>
+
+        <a href="{% url 'notice_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span>Notices</span>
+        </a>
+
+        <a href="{% url 'logout' %}" class="sidebar-link text-danger mt-3">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+
+
+    {% else %}
+
+        <!-- ========================================= -->
+        <!-- STUDENT SIDEBAR -->
+        <!-- ========================================= -->
+
+        <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-gauge"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <a href="{% url 'profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+            <i class="fa-solid fa-user"></i>
+            <span>My Profile</span>
+        </a>
+
+        <a href="{% url 'student_attendance' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_attendance' or request.resolver_match.url_name == 'attendance_report' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>My Attendance</span>
+        </a>
+
+        <a href="{% url 'student_results' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_results' %}active{% endif %}">
+            <i class="fa-solid fa-square-poll-vertical"></i>
+            <span>My Results</span>
+        </a>
+
+        <a href="{% url 'student_timetable' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_timetable' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>My Timetable</span>
+        </a>
+
+        <a href="{% url 'student_assignments' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_assignments' %}active{% endif %}">
+            <i class="fa-solid fa-file-lines"></i>
+            <span>My Assignments</span>
+        </a>
+
+        <a href="{% url 'student_exams' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_exams' %}active{% endif %}">
+            <i class="fa-solid fa-pen"></i>
+            <span>My Exams</span>
+        </a>
+
+        <a href="{% url 'student_fees' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_fees' %}active{% endif %}">
+            <i class="fa-solid fa-wallet"></i>
+            <span>My Fees</span>
+        </a>
+
+        <a href="{% url 'notice_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}">
+            <i class="fa-solid fa-bell"></i>
+            <span>Notices</span>
+        </a>
+
+        <a href="{% url 'logout' %}" class="sidebar-link text-danger mt-3">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+
+    {% endif %}
+
+</aside>

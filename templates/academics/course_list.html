@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Courses | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-book text-primary me-2"></i>Academic Courses</h1>
+            <p class="text-muted small m-0">View degree programs and courses offered across departments.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Course Name</th>
+                        <th>Code</th>
+                        <th>Department</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ course.name }}</strong></td>
+                        <td><span class="badge bg-secondary-subtle text-secondary">{{ course.code }}</span></td>
+                        <td>{{ course.department.name }}</td>
+                        <td>{{ course.duration_years }} Years</td>
+                        <td>
+                            {% if course.is_active %}
+                                <span class="badge bg-success-subtle text-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">No courses found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

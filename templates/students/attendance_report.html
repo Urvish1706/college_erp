@@ -1,0 +1,725 @@
+{% extends "base.html" %}
+
+{% block title %}
+Attendance Report | College ERP
+{% endblock %}
+
+{% block content %}
+
+<div class="report-header" data-aos="fade-down">
+
+    <div>
+        <span class="small-label">
+            Student Portal
+        </span>
+
+        <h2>
+            Attendance Report
+        </h2>
+
+        <p>
+            View your subject-wise and date-wise attendance.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'dashboard' %}"
+        class="btn btn-outline-primary"
+    >
+        <i class="fa-solid fa-arrow-left me-2"></i>
+        Dashboard
+    </a>
+
+</div>
+
+
+<!-- ========================================= -->
+<!-- OVERALL -->
+<!-- ========================================= -->
+
+<div class="row g-4 mb-4">
+
+    <div
+        class="col-lg-4"
+        data-aos="fade-up"
+    >
+
+        <div class="attendance-overview">
+
+            <div class="circle-progress">
+
+                <span>
+                    {{ overall_percentage }}%
+                </span>
+
+            </div>
+
+            <h4>
+                Overall Attendance
+            </h4>
+
+            <p>
+                {{ present }} Present /
+                {{ absent }} Absent
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div
+        class="col-lg-8"
+        data-aos="fade-up"
+        data-aos-delay="100"
+    >
+
+        <div class="summary-card">
+
+            <div class="summary-item">
+
+                <div class="summary-icon total">
+                    <i class="fa-solid fa-calendar"></i>
+                </div>
+
+                <div>
+                    <small>Total Classes</small>
+                    <strong>{{ total }}</strong>
+                </div>
+
+            </div>
+
+
+            <div class="summary-item">
+
+                <div class="summary-icon present">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+
+                <div>
+                    <small>Present</small>
+                    <strong>{{ present }}</strong>
+                </div>
+
+            </div>
+
+
+            <div class="summary-item">
+
+                <div class="summary-icon absent">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+
+                <div>
+                    <small>Absent</small>
+                    <strong>{{ absent }}</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================= -->
+<!-- SUBJECT REPORT -->
+<!-- ========================================= -->
+
+<div
+    class="report-card"
+    data-aos="fade-up"
+>
+
+    <div class="card-title">
+
+        <div>
+            <h5>Subject-wise Attendance</h5>
+
+            <small>
+                {{ student.semester.name }}
+            </small>
+        </div>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table align-middle">
+
+            <thead>
+
+                <tr>
+                    <th>Subject</th>
+                    <th>Total</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Attendance</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for item in subject_reports %}
+
+                <tr>
+
+                    <td>
+
+                        <strong>
+                            {{ item.subject.name }}
+                        </strong>
+
+                        <small class="d-block text-muted">
+                            {{ item.subject.code }}
+                        </small>
+
+                    </td>
+
+                    <td>
+                        {{ item.total }}
+                    </td>
+
+                    <td class="text-success fw-bold">
+                        {{ item.present }}
+                    </td>
+
+                    <td class="text-danger fw-bold">
+                        {{ item.absent }}
+                    </td>
+
+                    <td style="min-width:180px">
+
+                        <div class="d-flex justify-content-between">
+
+                            <span>
+                                {{ item.percentage }}%
+                            </span>
+
+                        </div>
+
+                        <div class="progress mt-2">
+
+                            <div
+                                class="progress-bar
+                                {% if item.percentage < 75 %}
+                                    bg-danger
+                                {% elif item.percentage < 85 %}
+                                    bg-warning
+                                {% else %}
+                                    bg-success
+                                {% endif %}"
+                                style="
+                                    width:{{ item.percentage }}%
+                                "
+                            ></div>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="5"
+                        class="text-center py-5"
+                    >
+
+                        <i class="fa-solid fa-chart-simple fs-2"></i>
+
+                        <p class="mt-2">
+                            No attendance records available.
+                        </p>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================= -->
+<!-- DATE-WISE HISTORY -->
+<!-- ========================================= -->
+
+<div
+    class="report-card mt-4"
+    data-aos="fade-up"
+>
+
+    <div class="card-title">
+
+        <div>
+            <h5>Attendance History</h5>
+
+            <small>
+                Recent attendance records
+            </small>
+        </div>
+
+    </div>
+
+
+    <div class="history-list">
+
+        {% for record in records %}
+
+        <div class="history-item">
+
+            <div class="history-date">
+
+                <strong>
+                    {{ record.date|date:"d" }}
+                </strong>
+
+                <small>
+                    {{ record.date|date:"M" }}
+                </small>
+
+            </div>
+
+
+            <div class="history-subject">
+
+                <strong>
+                    {{ record.subject.name }}
+                </strong>
+
+                <small>
+                    {{ record.subject.code }}
+                </small>
+
+            </div>
+
+
+            {% if record.status == "PRESENT" %}
+
+                <span class="status present-status">
+                    <i class="fa-solid fa-check"></i>
+                    Present
+                </span>
+
+            {% else %}
+
+                <span class="status absent-status">
+                    <i class="fa-solid fa-xmark"></i>
+                    Absent
+                </span>
+
+            {% endif %}
+
+        </div>
+
+        {% empty %}
+
+        <div class="text-center py-4 text-muted">
+            No attendance history available.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+.report-header {
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+
+}
+
+.small-label {
+
+    color:var(--primary);
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:1px;
+
+}
+
+.report-header h2 {
+
+    font-weight:800;
+    margin:5px 0;
+
+}
+
+.report-header p {
+
+    color:var(--muted);
+    margin:0;
+
+}
+
+
+.attendance-overview {
+
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:30px;
+    text-align:center;
+    height:100%;
+
+}
+
+
+.circle-progress {
+
+    width:150px;
+    height:150px;
+    margin:0 auto 20px;
+
+    border-radius:50%;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:
+        conic-gradient(
+            var(--primary)
+            {{ overall_percentage }}%,
+            var(--border)
+            {{ overall_percentage }}%
+        );
+
+    position:relative;
+
+}
+
+
+.circle-progress::before {
+
+    content:"";
+
+    position:absolute;
+
+    width:112px;
+    height:112px;
+
+    border-radius:50%;
+
+    background:var(--card);
+
+}
+
+
+.circle-progress span {
+
+    position:relative;
+
+    font-size:28px;
+    font-weight:800;
+
+}
+
+
+.attendance-overview h4 {
+
+    font-weight:800;
+
+}
+
+
+.attendance-overview p {
+
+    color:var(--muted);
+
+}
+
+
+.summary-card {
+
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+
+    height:100%;
+
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:25px;
+
+}
+
+
+.summary-item {
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+}
+
+
+.summary-icon {
+
+    width:45px;
+    height:45px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:12px;
+
+}
+
+
+.summary-icon.total {
+
+    background:#e0e7ff;
+    color:#4f46e5;
+
+}
+
+
+.summary-icon.present {
+
+    background:#dcfce7;
+    color:#16a34a;
+
+}
+
+
+.summary-icon.absent {
+
+    background:#fee2e2;
+    color:#dc2626;
+
+}
+
+
+.summary-item small {
+
+    display:block;
+    color:var(--muted);
+
+}
+
+
+.summary-item strong {
+
+    display:block;
+    font-size:24px;
+
+}
+
+
+.report-card {
+
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:25px;
+
+}
+
+
+.card-title {
+
+    margin-bottom:20px;
+
+}
+
+
+.card-title h5 {
+
+    font-weight:800;
+    margin-bottom:3px;
+
+}
+
+
+.card-title small {
+
+    color:var(--muted);
+
+}
+
+
+.progress {
+
+    height:7px;
+    border-radius:10px;
+    background:var(--border);
+
+}
+
+
+.progress-bar {
+
+    border-radius:10px;
+
+}
+
+
+.history-list {
+
+    display:flex;
+    flex-direction:column;
+
+}
+
+
+.history-item {
+
+    display:flex;
+    align-items:center;
+    gap:18px;
+
+    padding:15px 5px;
+
+    border-bottom:1px solid var(--border);
+
+}
+
+
+.history-item:last-child {
+
+    border-bottom:none;
+
+}
+
+
+.history-date {
+
+    width:50px;
+    height:50px;
+
+    border-radius:13px;
+
+    background:rgba(79,70,229,.1);
+
+    color:var(--primary);
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+}
+
+
+.history-date strong {
+
+    font-size:18px;
+    line-height:18px;
+
+}
+
+
+.history-date small {
+
+    font-size:10px;
+    text-transform:uppercase;
+
+}
+
+
+.history-subject {
+
+    flex:1;
+
+}
+
+
+.history-subject strong {
+
+    display:block;
+
+}
+
+
+.history-subject small {
+
+    color:var(--muted);
+
+}
+
+
+.status {
+
+    padding:7px 12px;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:700;
+
+}
+
+
+.present-status {
+
+    background:#dcfce7;
+    color:#15803d;
+
+}
+
+
+.absent-status {
+
+    background:#fee2e2;
+    color:#b91c1c;
+
+}
+
+
+@media(max-width:768px) {
+
+    .report-header {
+
+        flex-direction:column;
+        align-items:flex-start;
+        gap:15px;
+
+    }
+
+
+    .summary-card {
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .history-item {
+
+        gap:10px;
+
+    }
+
+}
+
+</style>
+
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Assignments | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-lines text-primary me-2"></i>Subject Assignments</h1>
+            <p class="text-muted small m-0">Manage course assignments for your allocated subjects.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+        <h3 class="h6 fw-bold mb-3">Allocated Subjects</h3>
+        {% if assignments %}
+            <div class="list-group list-group-flush">
+                {% for a in assignments %}
+                    <div class="list-group-item bg-transparent border-bottom px-0 py-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ a.subject.name }}</strong> ({{ a.subject.code }})
+                            <div class="text-muted extra-small">Semester {{ a.subject.semester.number }}</div>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary">Active Assignment</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-4 text-muted">No assigned subjects available.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

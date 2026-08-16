@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Exams Schedule | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-pen text-primary me-2"></i>Faculty Exam Overview</h1>
+            <p class="text-muted small m-0">Exams requiring result entry or academic evaluation.</p>
+        </div>
+        <a href="{% url 'result_entry' %}" class="btn btn-primary rounded-3 btn-sm">
+            <i class="fa-solid fa-pen-to-square me-1"></i>Enter Marks
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Exam Name</th>
+                        <th>Type</th>
+                        <th>Academic Year</th>
+                        <th>Semester</th>
+                        <th>Publication Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exam in exams %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ exam.name }}</strong></td>
+                        <td><span class="badge bg-info-subtle text-info">{{ exam.get_exam_type_display }}</span></td>
+                        <td>{{ exam.academic_year.name }}</td>
+                        <td>{{ exam.semester.name }}</td>
+                        <td>
+                            {% if exam.is_published %}
+                                <span class="badge bg-success-subtle text-success">Published</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning">Draft / Unpublished</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'result_entry' %}?exam={{ exam.id }}" class="btn btn-sm btn-outline-primary rounded-3">
+                                <i class="fa-solid fa-pen me-1"></i>Enter Results
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No examinations created yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

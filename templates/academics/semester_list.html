@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Semesters | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-layer-group text-primary me-2"></i>Semesters</h1>
+            <p class="text-muted small m-0">View registered semester structures.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Semester Name</th>
+                        <th>Semester Number</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sem in semesters %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ sem.name }}</strong></td>
+                        <td>Semester {{ sem.number }}</td>
+                        <td>
+                            {% if sem.is_active %}
+                                <span class="badge bg-success-subtle text-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No semesters found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

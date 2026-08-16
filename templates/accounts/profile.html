@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}
+My Profile | College ERP
+{% endblock %}
+
+
+{% block content %}
+
+<div class="row justify-content-center">
+
+    <div
+        class="col-xl-8"
+        data-aos="fade-up"
+    >
+
+        <div class="dashboard-card">
+
+            <div class="text-center mb-4">
+
+                {% if profile.profile_photo %}
+
+                    <img
+                        src="{{ profile.profile_photo.url }}"
+                        width="110"
+                        height="110"
+                        class="rounded-circle object-fit-cover"
+                    >
+
+                {% else %}
+
+                    <div
+                        class="mx-auto rounded-circle d-flex align-items-center justify-content-center"
+                        style="
+                            width:110px;
+                            height:110px;
+                            background:#4f46e5;
+                            color:white;
+                            font-size:40px;
+                        "
+                    >
+
+                        <i class="fa-solid fa-user"></i>
+
+                    </div>
+
+                {% endif %}
+
+
+                <h4 class="fw-bold mt-3 mb-1">
+
+                    {{ user.get_full_name|default:user.username }}
+
+                </h4>
+
+                <span class="badge bg-primary">
+
+                    {{ profile.get_role_display }}
+
+                </span>
+
+            </div>
+
+
+            <form
+                method="POST"
+                enctype="multipart/form-data"
+            >
+
+                {% csrf_token %}
+
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            First Name
+                        </label>
+
+                        {{ form.first_name }}
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Last Name
+                        </label>
+
+                        {{ form.last_name }}
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Email
+                        </label>
+
+                        {{ form.email }}
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            Phone
+                        </label>
+
+                        {{ form.phone }}
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            Address
+                        </label>
+
+                        {{ form.address }}
+
+                    </div>
+
+
+                    <div class="col-12">
+
+                        <label class="form-label">
+                            Profile Photo
+                        </label>
+
+                        {{ form.profile_photo }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="mt-4">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary px-4"
+                    >
+
+                        <i class="fa-solid fa-save me-2"></i>
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
