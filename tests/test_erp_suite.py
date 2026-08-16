@@ -115,3 +115,10 @@ class CollegeERPSuiteTestCase(TestCase):
         p1 = FeePayment.objects.create(fee=fee, amount=Decimal('5000.00'), payment_method='UPI')
         p2 = FeePayment.objects.create(fee=fee, amount=Decimal('5000.00'), payment_method='UPI')
         self.assertNotEqual(p1.receipt_number, p2.receipt_number)
+
+    def test_05_faculty_subjects_page(self):
+        client_fac = Client(HTTP_HOST='localhost')
+        client_fac.force_login(self.fac1_user)
+        res = client_fac.get('/faculty/my-subjects/')
+        self.assertEqual(res.status_code, 200)
+        self.assertIn('Data Structures', res.content.decode())

@@ -11,10 +11,17 @@ from .views import (
     faculty_login,
     faculty_dashboard,
     faculty_logout,
+    my_subjects,
 )
 
 
 urlpatterns = [
+
+    path(
+        "faculty/my-subjects/",
+        my_subjects,
+        name="faculty_subjects"
+    ),
 
     path(
         "faculty/",

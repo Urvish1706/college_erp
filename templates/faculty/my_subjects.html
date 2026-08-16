@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}My Assigned Subjects | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-book text-primary me-2"></i>My Assigned Subjects</h1>
+            <p class="text-muted small m-0">View subjects assigned to you for teaching, attendance, and evaluation.</p>
+        </div>
+        <div class="badge bg-primary-subtle text-primary p-2 fs-6">
+            <i class="fa-solid fa-chalkboard-user me-1"></i> {{ faculty.full_name }} ({{ faculty.faculty_id }})
+        </div>
+    </div>
+
+    <!-- Subjects Grid / Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if subjects %}
+        <div class="row g-4 mb-4">
+            {% for s in subjects %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100 p-4" style="background: var(--surface-2); border-top: 4px solid var(--primary) !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-primary-subtle text-primary fw-bold">{{ s.code }}</span>
+                        <span class="badge bg-info-subtle text-info">{{ s.get_subject_type_display }}</span>
+                    </div>
+
+                    <h5 class="fw-bold mb-2">{{ s.name }}</h5>
+                    <p class="text-muted small mb-3">
+                        <i class="fa-solid fa-graduation-cap me-1 text-primary"></i> {{ s.course.name }} ({{ s.course.code }})
+                    </p>
+
+                    <div class="border-top pt-3 mt-auto">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span><i class="fa-solid fa-building me-1"></i> Department:</span>
+                            <strong class="text-body">{{ s.course.department.code|default:"General" }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span><i class="fa-solid fa-layer-group me-1"></i> Semester:</span>
+                            <strong class="text-body">{{ s.semester.name }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between small text-muted mb-3">
+                            <span><i class="fa-solid fa-award me-1"></i> Credits:</span>
+                            <strong class="text-body">{{ s.credits }} Credits</strong>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'mark_attendance' %}?subject={{ s.id }}" class="btn btn-primary btn-sm w-100">
+                                <i class="fa-solid fa-calendar-check me-1"></i> Attendance
+                            </a>
+                            <a href="{% url 'faculty_assignments' %}" class="btn btn-outline-secondary btn-sm w-100">
+                                <i class="fa-solid fa-file-lines me-1"></i> Assignments
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="table-responsive border-top pt-4">
+            <h6 class="fw-bold mb-3"><i class="fa-solid fa-table me-2 text-primary"></i>Assigned Subjects Summary Table</h6>
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Course</th>
+                        <th>Department</th>
+                        <th>Semester</th>
+                        <th>Credits</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in subjects %}
+                    <tr>
+                        <td><code>{{ s.code }}</code></td>
+                        <td><strong class="text-primary">{{ s.name }}</strong></td>
+                        <td>{{ s.course.name }}</td>
+                        <td>{{ s.course.department.name|default:"—" }}</td>
+                        <td>{{ s.semester.name }}</td>
+                        <td><span class="badge bg-secondary-subtle text-secondary">{{ s.credits }}</span></td>
+                        <td><span class="badge bg-info-subtle text-info">{{ s.get_subject_type_display }}</span></td>
+                        <td><span class="badge bg-success-subtle text-success">Active</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-book-open fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No subjects assigned yet.</h5>
+            <p class="text-muted small m-0">You currently do not have any teaching subject assignments registered in the system.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

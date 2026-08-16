@@ -483,4 +483,31 @@ def faculty_login(request):
 @login_required
 def faculty_logout(request):
     logout(request)
-    return redirect("faculty_login")
+    return redirect("faculty_login")
+
+
+# =========================================================
+# FACULTY - MY SUBJECTS
+# =========================================================
+
+@login_required
+def my_subjects(request):
+    faculty = getattr(request.user, "faculty_profile", None)
+    if not faculty:
+        faculty = Faculty.objects.filter(user=request.user, is_active=True).first()
+
+    if not faculty:
+        messages.error(request, "Faculty profile not found.")
+        return redirect("dashboard")
+
+    subjects = Subject.objects.filter(
+        faculty_assignments__faculty=faculty,
+        faculty_assignments__is_active=True,
+        is_active=True
+    ).select_related("course", "semester", "course__department").distinct().order_by("semester__number", "name")
+
+    context = {
+        "faculty": faculty,
+        "subjects": subjects,
+    }
+    return render(request, "faculty/my_subjects.html", context)

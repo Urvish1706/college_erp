@@ -123,7 +123,7 @@
             <span>My Profile</span>
         </a>
 
-        <a href="{% url 'faculty_dashboard' %}" class="sidebar-link">
+        <a href="{% url 'faculty_subjects' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_subjects' %}active{% endif %}">
             <i class="fa-solid fa-book"></i>
             <span>My Subjects</span>
         </a>
