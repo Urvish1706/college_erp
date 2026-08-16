@@ -122,3 +122,18 @@ class CollegeERPSuiteTestCase(TestCase):
         res = client_fac.get('/faculty/my-subjects/')
         self.assertEqual(res.status_code, 200)
         self.assertIn('Data Structures', res.content.decode())
+
+    def test_06_leave_and_complaint_isolation(self):
+        from leave_management.models import LeaveApplication
+        from complaints.models import Complaint
+
+        leave = LeaveApplication.objects.create(applicant=self.stu1_user, leave_type='CASUAL', start_date=date(2026, 9, 1), end_date=date(2026, 9, 2), reason='Personal')
+        complaint = Complaint.objects.create(user=self.stu1_user, category='ACADEMIC', subject='Marks query', description='Query regarding internal marks')
+
+        # Student 2 tries to view Student 1 complaint detail -> 403
+        res = self.client_stu2.get(f'/complaints/{complaint.id}/')
+        self.assertEqual(res.status_code, 403)
+
+        # Student 1 views own complaint detail -> 200
+        res = self.client_stu1.get(f'/complaints/{complaint.id}/')
+        self.assertEqual(res.status_code, 200)

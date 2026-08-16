@@ -1,0 +1,8 @@
+from django.urls import path
+from .views import document_list, document_upload, document_delete
+
+urlpatterns = [
+    path("", document_list, name="document_list"),
+    path("upload/", document_upload, name="document_upload"),
+    path("<int:pk>/delete/", document_delete, name="document_delete"),
+]

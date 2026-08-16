@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Document Repository | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-folder-open text-primary me-2"></i>Institutional Document Vault</h1>
+            <p class="text-muted small m-0">Store, manage, and download academic certificates, transcripts, and official forms.</p>
+        </div>
+        <div>
+            <a href="{% url 'document_upload' %}" class="btn btn-primary shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload Document
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search document title or details...">
+            </div>
+            <div class="col-md-4">
+                <select name="type" class="form-select border-0" style="background: var(--surface-2);">
+                    <option value="">All Document Categories</option>
+                    <option value="CERTIFICATE" {% if selected_type == 'CERTIFICATE' %}selected{% endif %}>Academic Certificate</option>
+                    <option value="MARK_SHEET" {% if selected_type == 'MARK_SHEET' %}selected{% endif %}>Mark Sheet / Transcript</option>
+                    <option value="IDENTITY" {% if selected_type == 'IDENTITY' %}selected{% endif %}>Identity Proof</option>
+                    <option value="ADMISSION" {% if selected_type == 'ADMISSION' %}selected{% endif %}>Admission Form</option>
+                    <option value="RESEARCH" {% if selected_type == 'RESEARCH' %}selected{% endif %}>Research / Project</option>
+                    <option value="OTHER" {% if selected_type == 'OTHER' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                {% if selected_type or q %}
+                <a href="{% url 'document_list' %}" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Document Title</th>
+                        {% if is_admin %}<th>Owner</th>{% endif %}
+                        <th>Category</th>
+                        <th>Uploaded Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-body">{{ d.title }}</div>
+                            <small class="text-muted">{{ d.description|default:"—" }}</small>
+                        </td>
+                        {% if is_admin %}<td><span class="fw-semibold text-primary">{{ d.owner.get_full_name|default:d.owner.username }}</span></td>{% endif %}
+                        <td><span class="badge bg-primary-subtle text-primary">{{ d.get_document_type_display }}</span></td>
+                        <td><small class="text-muted">{{ d.created_at|date:"d M Y" }}</small></td>
+                        <td>
+                            <div class="d-flex gap-2">
+                                <a href="{{ d.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa-solid fa-download me-1"></i> Download
+                                </a>
+                                <form method="POST" action="{% url 'document_delete' d.pk %}" onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&type={{ selected_type }}&q={{ q }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&type={{ selected_type }}&q={{ q }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-folder-open fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No Documents Found</h5>
+            <p class="text-muted small m-0">There are no uploaded documents matching your query.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

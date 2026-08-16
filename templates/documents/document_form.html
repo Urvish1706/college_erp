@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 750px;">
+    <div class="mb-4">
+        <a href="{% url 'document_list' %}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Documents
+        </a>
+        <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-cloud-arrow-up text-primary me-2"></i>{{ title }}</h1>
+        <p class="text-muted small m-0">Upload official documents, certificates, and ID records to your vault.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        <form method="POST" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Document Title / Name <span class="text-danger">*</span></label>
+                {{ form.title }}
+                {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Document Category</label>
+                {{ form.document_type }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Select File <span class="text-danger">*</span></label>
+                {{ form.file }}
+                {% if form.file.errors %}<div class="text-danger small mt-1">{{ form.file.errors.0 }}</div>{% endif %}
+                <small class="text-muted">Allowed types: PDF, DOC, DOCX, JPG, PNG, ZIP. Max size: 10MB.</small>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Description / Notes (Optional)</label>
+                {{ form.description }}
+                {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">Upload File</button>
+                <a href="{% url 'document_list' %}" class="btn btn-secondary px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

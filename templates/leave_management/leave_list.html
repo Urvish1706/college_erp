@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Leave Management | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-calendar-minus text-primary me-2"></i>Leave Applications</h1>
+            <p class="text-muted small m-0">Apply for academic leave, track requests, and review submitted leave forms.</p>
+        </div>
+        <div>
+            <a href="{% url 'leave_create' %}" class="btn btn-primary shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Apply for Leave
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <form method="GET" class="row g-2 align-items-center">
+            {% if is_admin %}
+            <div class="col-md-5">
+                <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search applicant username or reason...">
+            </div>
+            {% endif %}
+            <div class="col-md-4">
+                <select name="status" class="form-select border-0" style="background: var(--surface-2);">
+                    <option value="">All Leave Statuses</option>
+                    <option value="PENDING" {% if selected_status == 'PENDING' %}selected{% endif %}>Pending Review</option>
+                    <option value="APPROVED" {% if selected_status == 'APPROVED' %}selected{% endif %}>Approved</option>
+                    <option value="REJECTED" {% if selected_status == 'REJECTED' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                {% if selected_status or q %}
+                <a href="{% url 'leave_list' %}" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Applicant</th>
+                        <th>Leave Type</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        {% if is_admin %}<th>Action</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in page_obj %}
+                    <tr>
+                        <td><strong class="text-primary">{{ l.applicant.get_full_name|default:l.applicant.username }}</strong></td>
+                        <td><span class="badge bg-primary-subtle text-primary">{{ l.get_leave_type_display }}</span></td>
+                        <td>{{ l.start_date|date:"d M Y" }}</td>
+                        <td>{{ l.end_date|date:"d M Y" }}</td>
+                        <td><span class="text-break">{{ l.reason|truncatewords:15 }}</span></td>
+                        <td>
+                            {% if l.status == 'APPROVED' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% elif l.status == 'REJECTED' %}
+                            <span class="badge bg-danger">Rejected</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        {% if is_admin %}
+                        <td>
+                            {% if l.status == 'PENDING' %}
+                            <div class="d-flex gap-1">
+                                <form method="POST" action="{% url 'leave_review' l.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="APPROVED">
+                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                <form method="POST" action="{% url 'leave_review' l.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="REJECTED">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <small class="text-muted">Reviewed by {{ l.reviewed_by.username|default:"Admin" }}</small>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ selected_status }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ selected_status }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-calendar-minus fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No Leave Applications Found</h5>
+            <p class="text-muted small m-0">There are no leave applications matching your request criteria.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

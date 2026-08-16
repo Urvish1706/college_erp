@@ -28,6 +28,9 @@ urlpatterns = [
     path("notices/", include("notices.urls")),
     path("notifications/", include("notifications.urls")),
     path("audit-logs/", include("audit_logs.urls")),
+    path("leave/", include("leave_management.urls")),
+    path("complaints/", include("complaints.urls")),
+    path("documents/", include("documents.urls")),
 ]
 
 

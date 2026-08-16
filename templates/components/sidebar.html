@@ -21,7 +21,7 @@
             <span>Students</span>
         </a>
 
-        <a href="{% url 'faculty_list' %}" class="sidebar-link {% if 'faculty' in request.resolver_match.url_name and request.resolver_match.url_name != 'faculty_dashboard' %}active{% endif %}">
+        <a href="{% url 'faculty_list' %}" class="sidebar-link {% if 'faculty' in request.resolver_match.url_name and request.resolver_match.url_name != 'faculty_dashboard' and request.resolver_match.url_name != 'faculty_subjects' %}active{% endif %}">
             <i class="fa-solid fa-chalkboard-user"></i>
             <span>Faculty</span>
         </a>
@@ -79,6 +79,21 @@
         <a href="{% url 'notice_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}">
             <i class="fa-solid fa-bullhorn"></i>
             <span>Notices</span>
+        </a>
+
+        <a href="{% url 'complaint_list' %}" class="sidebar-link {% if 'complaint' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-comments"></i>
+            <span>Complaints</span>
+        </a>
+
+        <a href="{% url 'leave_list' %}" class="sidebar-link {% if 'leave' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-calendar-minus"></i>
+            <span>Leave Management</span>
+        </a>
+
+        <a href="{% url 'document_list' %}" class="sidebar-link {% if 'document' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>Documents</span>
         </a>
 
         <a href="{% url 'reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
@@ -168,6 +183,16 @@
             <span>Notices</span>
         </a>
 
+        <a href="{% url 'leave_list' %}" class="sidebar-link {% if 'leave' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-calendar-minus"></i>
+            <span>Leave Management</span>
+        </a>
+
+        <a href="{% url 'complaint_list' %}" class="sidebar-link {% if 'complaint' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-comments"></i>
+            <span>Complaints</span>
+        </a>
+
         <a href="{% url 'notification_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">
             <i class="fa-solid fa-bell"></i>
             <span>Notifications</span>
@@ -228,6 +253,21 @@
         <a href="{% url 'notice_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}">
             <i class="fa-solid fa-bullhorn"></i>
             <span>Notices</span>
+        </a>
+
+        <a href="{% url 'leave_list' %}" class="sidebar-link {% if 'leave' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-calendar-minus"></i>
+            <span>Leave Management</span>
+        </a>
+
+        <a href="{% url 'complaint_list' %}" class="sidebar-link {% if 'complaint' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-comments"></i>
+            <span>Complaints</span>
+        </a>
+
+        <a href="{% url 'document_list' %}" class="sidebar-link {% if 'document' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>Documents</span>
         </a>
 
         <a href="{% url 'notification_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">

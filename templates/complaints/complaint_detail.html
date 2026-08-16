@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ complaint.subject }} | College ERP Grievance{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 900px;">
+    <div class="mb-4">
+        <a href="{% url 'complaint_list' %}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Complaints
+        </a>
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h1 class="h3 fw-bold m-0">{{ complaint.subject }}</h1>
+                <p class="text-muted small m-0 mt-1">
+                    Filed by {{ complaint.user.get_full_name|default:complaint.user.username }} on {{ complaint.created_at|date:"d F Y, H:i" }}
+                </p>
+            </div>
+            <div>
+                {% if complaint.status == 'RESOLVED' %}
+                <span class="badge bg-success fs-6 p-2">Resolved</span>
+                {% elif complaint.status == 'IN_PROGRESS' %}
+                <span class="badge bg-info text-dark fs-6 p-2">In Progress</span>
+                {% elif complaint.status == 'REJECTED' %}
+                <span class="badge bg-danger fs-6 p-2">Rejected</span>
+                {% else %}
+                <span class="badge bg-warning text-dark fs-6 p-2">Open</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Metadata Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <div class="d-flex flex-wrap gap-3 align-items-center text-muted small">
+            <div><strong>Category:</strong> <span class="badge bg-primary-subtle text-primary ms-1">{{ complaint.get_category_display }}</span></div>
+            <div><strong>Priority:</strong> <span class="badge bg-secondary ms-1">{{ complaint.get_priority_display }}</span></div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: var(--surface);">
+        <h6 class="fw-bold mb-2">Grievance Description</h6>
+        <div class="text-body lh-lg mb-4" style="white-space: pre-line;">{{ complaint.description }}</div>
+
+        {% if complaint.attachment %}
+        <div class="border-top pt-3">
+            <a href="{{ complaint.attachment.url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-3">
+                <i class="fa-solid fa-paperclip me-1"></i> View Attachment
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Admin Response / Review Box -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        <h6 class="fw-bold mb-3"><i class="fa-solid fa-reply me-2 text-primary"></i>Administrative Response</h6>
+
+        {% if complaint.admin_response %}
+        <div class="alert alert-info border-0 rounded-3 mb-3">
+            {{ complaint.admin_response }}
+        </div>
+        {% else %}
+        <p class="text-muted small mb-3">No administrative response has been posted yet.</p>
+        {% endif %}
+
+        {% if is_admin %}
+        <div class="border-top pt-3 mt-3">
+            <h6 class="fw-bold mb-2">Update Complaint Status</h6>
+            <form method="POST" action="{% url 'complaint_update_status' complaint.pk %}">
+                {% csrf_token %}
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <select name="status" class="form-select">
+                            <option value="OPEN" {% if complaint.status == 'OPEN' %}selected{% endif %}>Open</option>
+                            <option value="IN_PROGRESS" {% if complaint.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                            <option value="RESOLVED" {% if complaint.status == 'RESOLVED' %}selected{% endif %}>Resolved</option>
+                            <option value="CLOSED" {% if complaint.status == 'CLOSED' %}selected{% endif %}>Closed</option>
+                            <option value="REJECTED" {% if complaint.status == 'REJECTED' %}selected{% endif %}>Rejected</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <input type="text" name="admin_response" value="{{ complaint.admin_response }}" class="form-control" placeholder="Provide response remarks...">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm shadow-sm">Save Status & Response</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
