@@ -73,7 +73,7 @@ class Fee(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.student.full_name} - {self.get_fee_type_display()} (₹{self.total_amount|floatformat:2})"
+        return f"{self.student.full_name} - {self.get_fee_type_display()} (₹{self.total_amount:.2f})"
 
     def save(self, *args, **kwargs):
         if self.total_amount:

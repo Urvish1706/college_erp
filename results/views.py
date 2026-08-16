@@ -202,11 +202,11 @@ def result_entry(request):
 
 
             try:
+                from decimal import Decimal
+                marks_value = Decimal(str(marks))
+                max_marks_value = Decimal(str(max_marks))
 
-                marks_value = float(marks)
-                max_marks_value = float(max_marks)
-
-            except ValueError:
+            except (ValueError, TypeError):
 
                 messages.error(
                     request,
@@ -216,7 +216,7 @@ def result_entry(request):
                 continue
 
 
-            if marks_value < 0:
+            if marks_value < Decimal("0.00"):
 
                 messages.error(
                     request,
@@ -230,8 +230,7 @@ def result_entry(request):
 
                 messages.error(
                     request,
-                    f"Marks for {student.full_name} "
-                    f"cannot be greater than maximum marks."
+                    f"Marks for {student.full_name} cannot be greater than maximum marks."
                 )
 
                 continue
@@ -373,7 +372,19 @@ def toggle_publish(request, exam_id):
     exam.is_published = not exam.is_published
     exam.save()
 
+    from audit_logs.models import log_action
+    from notifications.models import create_notification
+    ip = request.META.get("REMOTE_ADDR")
     status = "published" if exam.is_published else "unpublished"
+
+    log_action(request.user, f"Exam Results {status.capitalize()}", "Exam", exam.id, f"Exam '{exam.name}' results set to {status}.", ip_address=ip)
+
+    if exam.is_published:
+        enrolled_students = Student.objects.filter(academic_year=exam.academic_year, semester=exam.semester, is_active=True)
+        for s in enrolled_students:
+            if s.user:
+                create_notification(s.user, f"Results Published: {exam.name}", f"Official results for {exam.name} have been published.", notification_type="RESULT", related_url="/results/my-results/")
+
     messages.success(request, f"Exam '{exam.name}' has been {status} successfully.")
 
     return redirect("exam_list")

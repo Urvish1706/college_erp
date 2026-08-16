@@ -1,32 +1,126 @@
 {% extends "base.html" %}
 
-{% block title %}Notices | College ERP{% endblock %}
+{% block title %}Notice Board | College ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-bullhorn text-primary me-2"></i>Campus Notices & Announcements</h1>
-            <p class="text-muted small m-0">Official notices published by administration and academic departments.</p>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-bullhorn text-primary me-2"></i>Institutional Notice Board</h1>
+            <p class="text-muted small m-0">Official announcements, academic schedules, exam alerts, and institutional updates.</p>
         </div>
+        {% if role == "ADMIN" %}
+        <div>
+            <a href="{% url 'notice_create' %}" class="btn btn-primary shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Publish Notice
+            </a>
+        </div>
+        {% endif %}
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 mb-3" style="background: var(--card);">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h3 class="h6 fw-bold m-0 text-primary">Mid-Term Examination Schedule Academic Session 2026</h3>
-            <span class="badge bg-primary-subtle text-primary small">Academic Notice</span>
-        </div>
-        <p class="text-muted small mb-2">The mid-term examination timetable for all department courses has been finalized. Mid-term assessments will commence as per the published schedule in August 2026.</p>
-        <div class="text-muted extra-small">Posted on: 15 August 2026 | Issued by: Academic Controller</div>
+    <!-- Search & Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background: var(--surface-2); color: var(--muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search headlines or contents...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="type" class="form-select border-0" style="background: var(--surface-2);">
+                    <option value="">All Categories</option>
+                    {% for key, val in notice_types %}
+                    <option value="{{ key }}" {% if selected_type == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="priority" class="form-select border-0" style="background: var(--surface-2);">
+                    <option value="">All Priorities</option>
+                    {% for key, val in priorities %}
+                    <option value="{{ key }}" {% if selected_priority == key %}selected{% endif %}>{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                {% if q or selected_type or selected_priority %}
+                <a href="{% url 'notice_list' %}" class="btn btn-secondary"><i class="fa-solid fa-rotate-left"></i></a>
+                {% endif %}
+            </div>
+        </form>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h3 class="h6 fw-bold m-0 text-success">Campus Infrastructure & Library System Upgrade</h3>
-            <span class="badge bg-success-subtle text-success small">General Notice</span>
+    <!-- Notice List Grid -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
+        <div class="list-group list-group-flush">
+            {% for notice in page_obj %}
+            <div class="list-group-item bg-transparent border-bottom py-3 d-flex justify-content-between align-items-start gap-3">
+                <div class="d-flex gap-3 align-items-start">
+                    <div class="rounded-circle p-2 d-flex align-items-center justify-content-center {% if notice.priority == 'URGENT' %}bg-danger-subtle text-danger{% elif notice.priority == 'IMPORTANT' %}bg-warning-subtle text-warning{% else %}bg-primary-subtle text-primary{% endif %}" style="width: 44px; height: 44px;">
+                        <i class="fa-solid {% if notice.priority == 'URGENT' %}fa-triangle-exclamation{% elif notice.priority == 'IMPORTANT' %}fa-circle-exclamation{% else %}fa-bullhorn{% endif %} fa-lg"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                            <a href="{% url 'notice_detail' notice.pk %}" class="h6 fw-bold text-decoration-none text-body m-0 hover-primary">
+                                {{ notice.title }}
+                            </a>
+                            <span class="badge {% if notice.priority == 'URGENT' %}bg-danger{% elif notice.priority == 'IMPORTANT' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                {{ notice.get_priority_display }}
+                            </span>
+                            <span class="badge bg-primary-subtle text-primary">
+                                {{ notice.get_notice_type_display }}
+                            </span>
+                            {% if not notice.is_published %}
+                            <span class="badge bg-dark">Draft / Unpublished</span>
+                            {% endif %}
+                            {% if notice.is_expired %}
+                            <span class="badge bg-secondary">Expired</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-muted small m-0 mb-1">{{ notice.content|truncatewords:25 }}</p>
+                        <div class="d-flex gap-3 text-muted small" style="font-size: 0.75rem;">
+                            <span><i class="fa-regular fa-calendar me-1"></i>Published: {{ notice.publish_date|date:"d M Y" }}</span>
+                            <span><i class="fa-solid fa-users me-1"></i>Audience: {{ notice.get_target_audience_display }}</span>
+                            {% if notice.attachment %}
+                            <span class="text-primary"><i class="fa-solid fa-paperclip me-1"></i>Attachment</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'notice_detail' notice.pk %}" class="btn btn-sm btn-outline-primary text-nowrap">Read Details</a>
+                    {% if role == "ADMIN" %}
+                    <a href="{% url 'notice_edit' notice.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
         </div>
-        <p class="text-muted small mb-2">The central college digital library and ERP student portal have been updated with enhanced dark mode support and optimized performance.</p>
-        <div class="text-muted extra-small">Posted on: 10 August 2026 | Issued by: Systems Admin</div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&type={{ selected_type }}&priority={{ selected_priority }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&type={{ selected_type }}&priority={{ selected_priority }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-bullhorn fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No Notices Found</h5>
+            <p class="text-muted small m-0">There are currently no active notices matching your filter criteria.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 800px;">
+    <div class="mb-4">
+        <a href="{% url 'notice_list' %}" class="btn btn-outline-secondary btn-sm mb-3">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Notices
+        </a>
+        <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-bullhorn text-primary me-2"></i>{{ title }}</h1>
+        <p class="text-muted small m-0">Fill out notice fields and define audience visibility.</p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        <form method="POST" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Notice Title / Headline <span class="text-danger">*</span></label>
+                {{ form.title }}
+                {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Category / Type</label>
+                    {{ form.notice_type }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Priority Level</label>
+                    {{ form.priority }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Target Audience</label>
+                {{ form.target_audience }}
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Department (Optional)</label>
+                    {{ form.department }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Course (Optional)</label>
+                    {{ form.course }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Semester (Optional)</label>
+                    {{ form.semester }}
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Publish Date</label>
+                    {{ form.publish_date }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Expiry Date (Optional)</label>
+                    {{ form.expiry_date }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Notice Content / Description <span class="text-danger">*</span></label>
+                {{ form.content }}
+                {% if form.content.errors %}<div class="text-danger small mt-1">{{ form.content.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Attachment / Document (Optional)</label>
+                {{ form.attachment }}
+                {% if form.attachment.errors %}<div class="text-danger small mt-1">{{ form.attachment.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="form-check mb-4">
+                {{ form.is_published }}
+                <label class="form-check-label fw-semibold" for="{{ form.is_published.id_for_label }}">
+                    Publish Immediately
+                </label>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary px-4 shadow-sm">{{ button_text }}</button>
+                <a href="{% url 'notice_list' %}" class="btn btn-secondary px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
