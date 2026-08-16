@@ -366,6 +366,8 @@ def toggle_publish(request, exam_id):
     is_admin = request.user.is_superuser or (hasattr(request.user, "profile") and request.user.profile.is_admin)
     if not is_admin:
         messages.error(request, "Only Admin can publish or unpublish exam results.")
+    if request.method != "POST":
+        messages.error(request, "Invalid request method for toggling publish state.")
         return redirect("exam_list")
 
     exam = get_object_or_404(Exam, pk=exam_id)
