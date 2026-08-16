@@ -96,6 +96,11 @@
             <span>Documents</span>
         </a>
 
+        <a href="{% url 'analytics_dashboard' %}" class="sidebar-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>Analytics</span>
+        </a>
+
         <a href="{% url 'reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
             <i class="fa-solid fa-chart-pie"></i>
             <span>Reports</span>
@@ -193,6 +198,11 @@
             <span>Complaints</span>
         </a>
 
+        <a href="{% url 'faculty_analytics' %}" class="sidebar-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Analytics</span>
+        </a>
+
         <a href="{% url 'notification_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">
             <i class="fa-solid fa-bell"></i>
             <span>Notifications</span>
@@ -268,6 +278,11 @@
         <a href="{% url 'document_list' %}" class="sidebar-link {% if 'document' in request.resolver_match.url_name %}active{% endif %}">
             <i class="fa-solid fa-folder-open"></i>
             <span>Documents</span>
+        </a>
+
+        <a href="{% url 'student_analytics' %}" class="sidebar-link {% if 'analytics' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>My Analytics</span>
         </a>
 
         <a href="{% url 'notification_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">

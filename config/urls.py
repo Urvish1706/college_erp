@@ -31,6 +31,7 @@ urlpatterns = [
     path("leave/", include("leave_management.urls")),
     path("complaints/", include("complaints.urls")),
     path("documents/", include("documents.urls")),
+    path("analytics/", include("analytics.urls")),
 ]
 
 

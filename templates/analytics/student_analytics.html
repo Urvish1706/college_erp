@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}My Academic Analytics | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-chart-line text-primary me-2"></i>My Academic Analytics</h1>
+            <p class="text-muted small m-0">Track your attendance rate, result progress, assignment completion, and fee payments.</p>
+        </div>
+        <div class="badge bg-primary-subtle text-primary p-2 fs-6">
+            <i class="fa-solid fa-user-graduate me-1"></i> {{ student.full_name }} ({{ student.student_id }})
+        </div>
+    </div>
+
+    <!-- Student KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: var(--surface);">
+                <span class="text-muted small fw-semibold d-block mb-1">Attendance Percentage</span>
+                <h3 class="fw-bold m-0 {% if overall_att_pct >= 75 %}text-success{% else %}text-danger{% endif %}">{{ overall_att_pct }}%</h3>
+                <small class="text-muted">{{ present_classes }} / {{ total_classes }} Classes</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: var(--surface);">
+                <span class="text-muted small fw-semibold d-block mb-1">Published Exam Results</span>
+                <h3 class="fw-bold m-0 text-primary">{{ results|length }}</h3>
+                <small class="text-muted">Evaluation Records</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: var(--surface);">
+                <span class="text-muted small fw-semibold d-block mb-1">Fee Payment Progress</span>
+                <h3 class="fw-bold m-0 text-info">₹{{ total_fee_paid|floatformat:2 }}</h3>
+                <small class="text-muted">Pending: ₹{{ pending_fee_amount|floatformat:2 }}</small>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="background: var(--surface);">
+                <span class="text-muted small fw-semibold d-block mb-1">Assignments Submitted</span>
+                <h3 class="fw-bold m-0 text-warning">{{ submitted_assignments }}</h3>
+                <small class="text-muted">Submissions On Record</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: var(--surface);">
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-square-poll-vertical me-2 text-primary"></i>My Published Results Performance</h5>
+        {% if results %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Exam</th>
+                        <th>Subject</th>
+                        <th>Marks Obtained</th>
+                        <th>Max Marks</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in results %}
+                    <tr>
+                        <td><strong>{{ r.exam.name }}</strong></td>
+                        <td>{{ r.subject.name }}</td>
+                        <td><strong class="text-primary">{{ r.marks_obtained }}</strong></td>
+                        <td>{{ r.max_marks }}</td>
+                        <td>
+                            {% if r.marks_obtained >= 40 %}
+                            <span class="badge bg-success">Passed</span>
+                            {% else %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <p class="m-0 small">No published exam results found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

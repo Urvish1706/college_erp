@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "results",
     "notifications",
     "audit_logs",
+    "analytics",
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

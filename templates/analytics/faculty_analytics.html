@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Subject Analytics | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-chart-pie text-primary me-2"></i>Faculty Teaching Analytics</h1>
+            <p class="text-muted small m-0">Subject performance, student attendance rates, assignment submissions, and result averages.</p>
+        </div>
+        <div class="badge bg-primary-subtle text-primary p-2 fs-6">
+            <i class="fa-solid fa-chalkboard-user me-1"></i> {{ faculty.full_name }}
+        </div>
+    </div>
+
+    <!-- Assigned Subjects Analytics Cards -->
+    <div class="row g-4 mb-4">
+        {% for sa in subject_analytics %}
+        <div class="col-md-6 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: var(--surface);">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <span class="badge bg-primary-subtle text-primary fw-bold">{{ sa.subject.code }}</span>
+                    <span class="badge bg-info-subtle text-info">{{ sa.subject.semester.name }}</span>
+                </div>
+                <h5 class="fw-bold mb-2">{{ sa.subject.name }}</h5>
+                <p class="text-muted small mb-3"><i class="fa-solid fa-graduation-cap me-1"></i> {{ sa.subject.course.name }}</p>
+
+                <div class="border-top pt-3">
+                    <div class="d-flex justify-content-between small text-muted mb-2">
+                        <span>Attendance Rate:</span>
+                        <strong class="{% if sa.attendance_pct >= 75 %}text-success{% else %}text-warning{% endif %}">{{ sa.attendance_pct }}%</strong>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted mb-2">
+                        <span>Average Result Marks:</span>
+                        <strong class="text-body">{{ sa.average_marks }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Assignments / Submissions:</span>
+                        <strong class="text-body">{{ sa.assignments_count }} / {{ sa.submissions_count }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center" style="background: var(--surface);">
+                <i class="fa-solid fa-chart-line fa-3x text-muted mb-3"></i>
+                <h5 class="fw-bold">No Teaching Analytics Available</h5>
+                <p class="text-muted small m-0">You currently do not have assigned subjects with active student records.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
