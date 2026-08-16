@@ -179,80 +179,67 @@ def result_entry(request):
         # SAVE EACH STUDENT MARK
         # ======================================
 
-        for student in Student.objects.filter(
+        eligible_students_qs = Student.objects.filter(
             is_active=True,
             academic_year=selected_exam.academic_year,
             semester=selected_exam.semester,
-        ):
-
-            marks = request.POST.get(
-                f"marks_{student.id}"
+            course=selected_subject.course
+            if hasattr(selected_subject, "course")
+            else None
+        )
+        if not eligible_students_qs.exists():
+            eligible_students_qs = Student.objects.filter(
+                is_active=True,
+                academic_year=selected_exam.academic_year,
+                semester=selected_exam.semester,
             )
 
-            remarks = request.POST.get(
-                f"remarks_{student.id}",
-                ""
-            ).strip()
+        eligible_map = {str(s.id): s for s in eligible_students_qs}
 
+        from decimal import Decimal, InvalidOperation
 
-            # Empty marks = skip
-            if marks in [None, ""]:
-
+        # Save student marks with strict authorization check
+        for key, marks in request.POST.items():
+            if not key.startswith("marks_"):
                 continue
 
+            student_id_str = key.replace("marks_", "")
+            if student_id_str not in eligible_map:
+                messages.error(request, f"Unauthorized student ID {student_id_str} submitted.")
+                continue
+
+            student = eligible_map[student_id_str]
+            remarks = request.POST.get(f"remarks_{student_id_str}", "").strip()
+
+            if marks in [None, ""]:
+                continue
 
             try:
-                from decimal import Decimal
                 marks_value = Decimal(str(marks))
                 max_marks_value = Decimal(str(max_marks))
-
-            except (ValueError, TypeError):
-
-                messages.error(
-                    request,
-                    f"Invalid marks for {student.full_name}."
-                )
-
+            except (InvalidOperation, ValueError, TypeError):
+                messages.error(request, f"Invalid marks for {student.full_name}.")
                 continue
-
 
             if marks_value < Decimal("0.00"):
-
-                messages.error(
-                    request,
-                    f"Marks cannot be negative for {student.full_name}."
-                )
-
+                messages.error(request, f"Marks cannot be negative for {student.full_name}.")
                 continue
-
 
             if marks_value > max_marks_value:
-
-                messages.error(
-                    request,
-                    f"Marks for {student.full_name} cannot be greater than maximum marks."
-                )
-
+                messages.error(request, f"Marks for {student.full_name} cannot be greater than maximum marks ({max_marks_value}).")
                 continue
 
-
             Result.objects.update_or_create(
-
                 exam=selected_exam,
-
                 student=student,
-
                 subject=selected_subject,
-
                 defaults={
                     "faculty": faculty,
                     "marks_obtained": marks_value,
                     "max_marks": max_marks_value,
                     "remarks": remarks,
                 }
-
             )
-
 
         messages.success(
             request,
@@ -260,8 +247,7 @@ def result_entry(request):
         )
 
         return redirect(
-            f"/results/entry/?exam={selected_exam.id}"
-            f"&subject={selected_subject.id}"
+            f"/results/entry/?exam={selected_exam.id}&subject={selected_subject.id}"
         )
 
 
@@ -286,6 +272,41 @@ def result_entry(request):
         "results/result_entry.html",
         context
     )
+
+@login_required
+def toggle_publish(request, exam_id):
+    """
+    Toggle is_published flag for an exam (Admin only).
+    """
+    is_admin = request.user.is_superuser or (hasattr(request.user, "profile") and request.user.profile.is_admin)
+    if not is_admin:
+        messages.error(request, "You do not have permission to publish or unpublish exams.")
+        return redirect("results_exam_list")
+
+    if request.method != "POST":
+        messages.error(request, "Invalid request method for toggling publish state.")
+        return redirect("results_exam_list")
+
+    exam = get_object_or_404(Exam, pk=exam_id)
+    exam.is_published = not exam.is_published
+    exam.save()
+
+    from audit_logs.models import log_action
+    from notifications.models import create_notification
+    ip = request.META.get("REMOTE_ADDR")
+    status = "published" if exam.is_published else "unpublished"
+
+    log_action(request.user, f"Exam Results {status.capitalize()}", "Exam", exam.id, f"Exam '{exam.name}' results set to {status}.", ip_address=ip)
+
+    if exam.is_published:
+        enrolled_students = Student.objects.filter(academic_year=exam.academic_year, semester=exam.semester, is_active=True)
+        for s in enrolled_students:
+            if s.user:
+                create_notification(s.user, f"Results Published: {exam.name}", f"Official results for {exam.name} have been published.", notification_type="RESULT", related_url="/results/my-results/")
+
+    messages.success(request, f"Exam '{exam.name}' has been {status} successfully.")
+
+    return redirect("results_exam_list")
 
 @login_required
 def student_results(request):
@@ -358,35 +379,4 @@ def exam_list(request):
     )
 
 
-@login_required
-def toggle_publish(request, exam_id):
-    """
-    Toggle is_published flag for an exam (Admin only).
-    """
-    is_admin = request.user.is_superuser or (hasattr(request.user, "profile") and request.user.profile.is_admin)
-    if not is_admin:
-        messages.error(request, "Only Admin can publish or unpublish exam results.")
-    if request.method != "POST":
-        messages.error(request, "Invalid request method for toggling publish state.")
-        return redirect("exam_list")
-
-    exam = get_object_or_404(Exam, pk=exam_id)
-    exam.is_published = not exam.is_published
-    exam.save()
-
-    from audit_logs.models import log_action
-    from notifications.models import create_notification
-    ip = request.META.get("REMOTE_ADDR")
-    status = "published" if exam.is_published else "unpublished"
-
-    log_action(request.user, f"Exam Results {status.capitalize()}", "Exam", exam.id, f"Exam '{exam.name}' results set to {status}.", ip_address=ip)
-
-    if exam.is_published:
-        enrolled_students = Student.objects.filter(academic_year=exam.academic_year, semester=exam.semester, is_active=True)
-        for s in enrolled_students:
-            if s.user:
-                create_notification(s.user, f"Results Published: {exam.name}", f"Official results for {exam.name} have been published.", notification_type="RESULT", related_url="/results/my-results/")
-
-    messages.success(request, f"Exam '{exam.name}' has been {status} successfully.")
-
-    return redirect("exam_list")
+

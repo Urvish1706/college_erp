@@ -137,3 +137,41 @@ class CollegeERPSuiteTestCase(TestCase):
         # Student 1 views own complaint detail -> 200
         res = self.client_stu1.get(f'/complaints/{complaint.id}/')
         self.assertEqual(res.status_code, 200)
+
+    def test_07_reports_permission_security(self):
+        # Student tries to view reports -> 403
+        res = self.client_stu1.get('/reports/')
+        self.assertEqual(res.status_code, 403)
+
+        # Student tries export -> 403
+        res = self.client_stu1.get('/reports/?export=students')
+        self.assertEqual(res.status_code, 403)
+
+        # Admin views reports -> 200
+        client_admin = Client(HTTP_HOST='localhost')
+        client_admin.force_login(self.admin_user)
+        res = client_admin.get('/reports/')
+        self.assertEqual(res.status_code, 200)
+
+    def test_08_toggle_publish_and_result_authorization(self):
+        from results.models import Exam, Result
+        exam = Exam.objects.create(
+            name='Final Midterm', exam_type='MID', academic_year=self.ay, semester=self.sem, is_published=False
+        )
+
+        # Non-admin (Student) attempts to toggle publish -> redirected and is_published remains False
+        res = self.client_stu1.post(f'/results/exams/{exam.id}/toggle-publish/')
+        exam.refresh_from_db()
+        self.assertFalse(exam.is_published)
+
+        # Non-POST request to toggle publish -> redirected and is_published remains False
+        client_admin = Client(HTTP_HOST='localhost')
+        client_admin.force_login(self.admin_user)
+        res = client_admin.get(f'/results/exams/{exam.id}/toggle-publish/')
+        exam.refresh_from_db()
+        self.assertFalse(exam.is_published)
+
+        # Valid POST request from Admin toggles is_published
+        res = client_admin.post(f'/results/exams/{exam.id}/toggle-publish/')
+        exam.refresh_from_db()
+        self.assertTrue(exam.is_published)

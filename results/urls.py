@@ -21,7 +21,7 @@ urlpatterns = [
     path(
         "exams/",
         exam_list,
-        name="exam_list"
+        name="results_exam_list"
     ),
     path(
         "exams/<int:exam_id>/toggle-publish/",

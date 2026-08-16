@@ -90,8 +90,16 @@ def faculty_timetable(request):
     return render(request, "dashboard/faculty_timetable.html", {"faculty": faculty})
 
 
+from django.core.exceptions import PermissionDenied
+
+
 @login_required
 def reports_view(request):
+    user = request.user
+    is_admin_or_staff = user.is_superuser or user.is_staff or (hasattr(user, "profile") and user.profile.role in ["ADMIN", "HOD", "ACCOUNTANT"])
+    if not is_admin_or_staff:
+        raise PermissionDenied("You are not authorized to access institutional reports.")
+
     report_type = request.GET.get("export")
     if report_type:
         response = HttpResponse(content_type="text/csv")

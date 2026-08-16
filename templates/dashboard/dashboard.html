@@ -448,7 +448,7 @@ Dashboard | College ERP
             <!-- MY SUBJECTS -->
 
             <a
-                href="#"
+                href="{% if user.faculty_profile or user.profile.role == 'FACULTY' %}{% url 'faculty_subjects' %}{% else %}{% url 'subject_list' %}{% endif %}"
                 class="quick-card"
                 data-aos="zoom-in"
                 data-aos-delay="100"
@@ -480,7 +480,7 @@ Dashboard | College ERP
             <!-- ACADEMIC RECORDS -->
 
             <a
-                href="#"
+                href="{% if user.is_superuser or user.is_staff or user.profile.role == 'ADMIN' %}{% url 'subject_list' %}{% elif user.faculty_profile or user.profile.role == 'FACULTY' %}{% url 'result_entry' %}{% else %}{% url 'student_results' %}{% endif %}"
                 class="quick-card"
                 data-aos="zoom-in"
                 data-aos-delay="150"
@@ -512,7 +512,7 @@ Dashboard | College ERP
             <!-- PROFILE -->
 
             <a
-                href="#"
+                href="{% url 'profile' %}"
                 class="quick-card"
                 data-aos="zoom-in"
                 data-aos-delay="200"

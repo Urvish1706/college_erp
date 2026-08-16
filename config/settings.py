@@ -13,11 +13,24 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-prod-college-erp-secure-rotated-key-9f8e7d6c5b4a3120")
-DEBUG = os.environ.get("DEBUG", "True").lower() in ["true", "1", "t"]
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
+
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-dev-only-secret-key-change-in-prod"
+    else:
+        raise ImproperlyConfigured("SECRET_KEY environment variable is required in production mode.")
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost,*").split(",")
+    if host.strip()
+]
 
 
 # Application definition
