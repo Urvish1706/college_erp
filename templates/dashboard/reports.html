@@ -1,30 +1,67 @@
 {% extends "base.html" %}
 
-{% block title %}Institutional Reports | College ERP{% endblock %}
+{% block title %}Institutional Reports & Analytics | College ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-chart-pie text-primary me-2"></i>Institutional Reports & Analytics</h1>
-            <p class="text-muted small m-0">Consolidated reports on student attendance, academic results, and faculty performance.</p>
+            <p class="text-muted small m-0">Generate, view, and export institutional reports for students, fees, examinations, and attendance.</p>
         </div>
     </div>
 
+    <!-- Summary KPI Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold">Active Students</small>
+                <div class="h2 fw-bold text-primary mt-1 m-0">{{ active_students_count }}</div>
+                <small class="text-muted">Enrolled Records</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold">Total Fees Billed</small>
+                <div class="h2 fw-bold text-info mt-1 m-0">₹{{ total_fees_billed|floatformat:2 }}</div>
+                <small class="text-muted">Institutional Invoicing</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold">Collections to Date</small>
+                <div class="h2 fw-bold text-success mt-1 m-0">₹{{ total_payments_collected|floatformat:2 }}</div>
+                <small class="text-muted">Cleared Receipts</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Cards -->
     <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
-                <h3 class="h6 fw-bold mb-3"><i class="fa-solid fa-chart-line text-primary me-2"></i>Attendance Reports</h3>
-                <p class="text-muted small">Generate department-wise or course-wise student attendance reports and track low-attendance alerts across semesters.</p>
-                <a href="{% url 'attendance_history' %}" class="btn btn-outline-primary btn-sm rounded-3 w-100 mt-2">View Attendance Log</a>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: var(--surface);">
+                <div class="text-primary mb-3"><i class="fa-solid fa-user-graduate fa-2x"></i></div>
+                <h5 class="fw-bold mb-2">Student Enrolment Report</h5>
+                <p class="text-muted small mb-4">Export complete roster of active students, departments, courses, and academic years.</p>
+                <a href="?export=students" class="btn btn-outline-primary w-100 mt-auto"><i class="fa-solid fa-file-csv me-1"></i> Export Students CSV</a>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
-                <h3 class="h6 fw-bold mb-3"><i class="fa-solid fa-square-poll-vertical text-success me-2"></i>Examination & Performance Reports</h3>
-                <p class="text-muted small">Analyze exam score distribution, grade percentages, pass rates, and published result analytics across all departments.</p>
-                <a href="{% url 'exam_list' %}" class="btn btn-outline-success btn-sm rounded-3 w-100 mt-2">Manage Examinations & Results</a>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: var(--surface);">
+                <div class="text-success mb-3"><i class="fa-solid fa-wallet fa-2x"></i></div>
+                <h5 class="fw-bold mb-2">Financial & Fee Report</h5>
+                <p class="text-muted small mb-4">Export student fee ledgers, payment receipts, pending balances, and overdue accounts.</p>
+                <a href="?export=fees" class="btn btn-outline-success w-100 mt-auto"><i class="fa-solid fa-file-csv me-1"></i> Export Fees CSV</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100" style="background: var(--surface);">
+                <div class="text-warning mb-3"><i class="fa-solid fa-calendar-check fa-2x"></i></div>
+                <h5 class="fw-bold mb-2">Attendance Log Report</h5>
+                <p class="text-muted small mb-4">Export class attendance logs, present/absent stats, and low-attendance thresholds.</p>
+                <a href="?export=attendance" class="btn btn-outline-warning text-dark w-100 mt-auto"><i class="fa-solid fa-file-csv me-1"></i> Export Attendance CSV</a>
             </div>
         </div>
     </div>

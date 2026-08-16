@@ -1,20 +1,186 @@
 {% extends "base.html" %}
 
-{% block title %}Fee Records | College ERP{% endblock %}
+{% block title %}Fees Management | College ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-money-bill text-primary me-2"></i>Institutional Fee Records</h1>
-            <p class="text-muted small m-0">Institutional overview of student fee collections and dues.</p>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-wallet text-primary me-2"></i>Fees Management</h1>
+            <p class="text-muted small m-0">Track tuition fees, record student payments, and manage institutional collections.</p>
+        </div>
+        <div>
+            <a href="{% url 'fee_create' %}" class="btn btn-primary shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Create Fee Record
+            </a>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 text-center py-5" style="background: var(--card);">
-        <i class="fa-solid fa-receipt fs-1 text-primary mb-3"></i>
-        <h3 class="h5 fw-bold">Fee Management System</h3>
-        <p class="text-muted small m-0">Track tuition payments, generate fee receipts, and monitor department-wise collections.</p>
+    <!-- Financial KPI Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Total Billed</small>
+                <div class="h4 fw-bold m-0 text-primary mt-1">₹{{ total_fees|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Total Collected</small>
+                <div class="h4 fw-bold m-0 text-success mt-1">₹{{ total_collected|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Total Pending</small>
+                <div class="h4 fw-bold m-0 text-warning mt-1">₹{{ total_pending|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Overdue Dues</small>
+                <div class="h4 fw-bold m-0 text-danger mt-1">₹{{ total_overdue|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Today's Collection</small>
+                <div class="h4 fw-bold m-0 text-info mt-1">₹{{ todays_collection|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Pending Students</small>
+                <div class="h4 fw-bold m-0 text-secondary mt-1">{{ pending_students_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background: var(--surface-2); color: var(--muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Student name, ID, receipt, tx ID...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="course" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Courses</option>
+                    {% for c in courses %}
+                    <option value="{{ c.id }}" {% if selected_course == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="fee_type" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Fee Types</option>
+                    {% for key, label in fee_types %}
+                    <option value="{{ key }}" {% if selected_type == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="PAID" {% if selected_status == 'PAID' %}selected{% endif %}>Paid</option>
+                    <option value="PARTIAL" {% if selected_status == 'PARTIAL' %}selected{% endif %}>Partial</option>
+                    <option value="PENDING" {% if selected_status == 'PENDING' %}selected{% endif %}>Pending</option>
+                    <option value="OVERDUE" {% if selected_status == 'OVERDUE' %}selected{% endif %}>Overdue</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                {% if q or selected_course or selected_semester or selected_year or selected_type or selected_status %}
+                <a href="{% url 'fee_list' %}" class="btn btn-secondary" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Fee Type</th>
+                        <th>Course / Sem</th>
+                        <th>Total Amount</th>
+                        <th>Paid</th>
+                        <th>Pending</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'fee_detail' f.pk %}" class="fw-bold text-primary text-decoration-none">{{ f.student.full_name }}</a>
+                            <small class="text-muted d-block">ID: {{ f.student.student_id }}</small>
+                        </td>
+                        <td><span class="badge bg-primary-subtle text-primary p-2">{{ f.get_fee_type_display }}</span></td>
+                        <td>
+                            <div>{{ f.course.code }}</div>
+                            <small class="text-muted">Sem {{ f.semester.number }}</small>
+                        </td>
+                        <td class="fw-bold">₹{{ f.total_amount|floatformat:2 }}</td>
+                        <td class="text-success fw-semibold">₹{{ f.total_paid|floatformat:2 }}</td>
+                        <td class="{% if f.pending_amount > 0 %}text-danger{% else %}text-muted{% endif %} fw-semibold">₹{{ f.pending_amount|floatformat:2 }}</td>
+                        <td>{{ f.due_date|date:"d M Y" }}</td>
+                        <td>
+                            {% if f.computed_status == 'PAID' %}
+                            <span class="badge bg-success p-2 px-3">Paid</span>
+                            {% elif f.computed_status == 'PARTIAL' %}
+                            <span class="badge bg-warning text-dark p-2 px-3">Partial</span>
+                            {% elif f.computed_status == 'OVERDUE' %}
+                            <span class="badge bg-danger p-2 px-3">Overdue</span>
+                            {% else %}
+                            <span class="badge bg-info text-dark p-2 px-3">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'fee_detail' f.pk %}" class="btn btn-sm btn-outline-primary" title="View Fee Details"><i class="fa-solid fa-eye"></i></a>
+                                {% if f.pending_amount > 0 %}
+                                <a href="{% url 'payment_create' f.pk %}" class="btn btn-sm btn-success" title="Record Payment"><i class="fa-solid fa-cash-register me-1"></i> Pay</a>
+                                {% endif %}
+                                <a href="{% url 'fee_update' f.pk %}" class="btn btn-sm btn-warning" title="Edit Fee Record"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{% url 'fee_delete' f.pk %}" class="btn btn-sm btn-danger" title="Delete Fee Record"><i class="fa-solid fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&course={{ selected_course }}&fee_type={{ selected_type }}&status={{ selected_status }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&course={{ selected_course }}&fee_type={{ selected_type }}&status={{ selected_status }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-wallet fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No fee records found</h5>
+            <p class="text-muted small">No student fee records match your search or filter parameters.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

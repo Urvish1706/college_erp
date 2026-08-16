@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | College ERP{% endblock %}
+
+{% block extra_css %}
+<style>
+    .active-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .active-toggle input[type="checkbox"],
+    .form-check-input {
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+        accent-color: var(--primary);
+    }
+
+    .active-toggle label,
+    .form-check-label {
+        color: var(--text-primary) !important;
+        font-weight: 700;
+        cursor: pointer;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 900px;">
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <a href="{% if assignment %}{% url 'assignment_detail' assignment.pk %}{% else %}{% url 'faculty_assignments' %}{% endif %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back
+        </a>
+        <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>{{ title }}</h1>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Assignment Title <span class="text-danger">*</span></label>
+                    {{ form.title }}
+                    {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Course <span class="text-danger">*</span></label>
+                    {{ form.course }}
+                    {% if form.course.errors %}<div class="text-danger small mt-1">{{ form.course.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Semester <span class="text-danger">*</span></label>
+                    {{ form.semester }}
+                    {% if form.semester.errors %}<div class="text-danger small mt-1">{{ form.semester.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Academic Year <span class="text-danger">*</span></label>
+                    {{ form.academic_year }}
+                    {% if form.academic_year.errors %}<div class="text-danger small mt-1">{{ form.academic_year.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Subject <span class="text-danger">*</span></label>
+                    {{ form.subject }}
+                    {% if form.subject.errors %}<div class="text-danger small mt-1">{{ form.subject.errors.0 }}</div>{% endif %}
+                </div>
+
+                {% if form.faculty and not form.faculty.is_hidden %}
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Faculty <span class="text-danger">*</span></label>
+                    {{ form.faculty }}
+                    {% if form.faculty.errors %}<div class="text-danger small mt-1">{{ form.faculty.errors.0 }}</div>{% endif %}
+                </div>
+                {% else %}
+                {{ form.faculty }}
+                {% endif %}
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Assigned Date <span class="text-danger">*</span></label>
+                    {{ form.assigned_date }}
+                    {% if form.assigned_date.errors %}<div class="text-danger small mt-1">{{ form.assigned_date.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Due Date & Time <span class="text-danger">*</span></label>
+                    {{ form.due_date }}
+                    {% if form.due_date.errors %}<div class="text-danger small mt-1">{{ form.due_date.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Maximum Marks <span class="text-danger">*</span></label>
+                    {{ form.max_marks }}
+                    {% if form.max_marks.errors %}<div class="text-danger small mt-1">{{ form.max_marks.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Description & Instructions</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold">Attachment File (Optional)</label>
+                    {{ form.attachment }}
+                    <small class="text-muted d-block mt-1">Allowed: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, ZIP, JPG, PNG (Max 10MB)</small>
+                    {% if form.attachment.errors %}<div class="text-danger small mt-1">{{ form.attachment.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="col-md-4 d-flex align-items-center">
+                    <div class="form-check active-toggle mt-3">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="form-check-label">
+                            Active Assignment
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                <a href="{% if assignment %}{% url 'assignment_detail' assignment.pk %}{% else %}{% url 'faculty_assignments' %}{% endif %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4"><i class="fa-solid fa-check me-1"></i> {{ button_text|default:"Save Assignment" }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

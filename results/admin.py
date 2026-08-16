@@ -11,7 +11,10 @@ class ExamAdmin(admin.ModelAdmin):
         "exam_type",
         "academic_year",
         "semester",
+        "start_date",
+        "end_date",
         "is_published",
+        "is_active",
         "created_at",
     )
 
@@ -20,6 +23,7 @@ class ExamAdmin(admin.ModelAdmin):
         "academic_year",
         "semester",
         "is_published",
+        "is_active",
     )
 
     search_fields = (

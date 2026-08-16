@@ -1,38 +1,130 @@
 {% extends "base.html" %}
 
-{% block title %}My Fees | College ERP{% endblock %}
+{% block title %}My Fee Statement | College ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-wallet text-primary me-2"></i>My Fee Statement</h1>
-            <p class="text-muted small m-0">View tuition fees and payment status for your current academic year.</p>
+            <p class="text-muted small m-0">View tuition fees, payment breakdown, due dates, and receipts for {{ student.course.name }} (Semester {{ student.semester.number }}).</p>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--card);">
-                <span class="text-muted small d-block mb-1">Total Tuition Fee</span>
-                <div class="h2 fw-bold text-primary m-0">$4,500.00</div>
-                <span class="badge bg-success-subtle text-success mt-2">Paid / Up to date</span>
+    <!-- Summary Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+                <span class="text-muted small d-block mb-1">Total Billed Fees</span>
+                <div class="h2 fw-bold text-primary m-0">₹{{ total_fees|floatformat:2 }}</div>
+                <span class="text-muted extra-small mt-2 d-block">Academic Fee Obligations</span>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--card);">
-                <span class="text-muted small d-block mb-1">Amount Paid</span>
-                <div class="h2 fw-bold text-success m-0">$4,500.00</div>
-                <span class="text-muted extra-small mt-2 d-block">Semester 1 Fee Cleared</span>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+                <span class="text-muted small d-block mb-1">Total Amount Paid</span>
+                <div class="h2 fw-bold text-success m-0">₹{{ total_paid|floatformat:2 }}</div>
+                <span class="badge bg-success-subtle text-success mt-2">Cleared Collections</span>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--card);">
-                <span class="text-muted small d-block mb-1">Pending Due</span>
-                <div class="h2 fw-bold text-muted m-0">$0.00</div>
-                <span class="text-muted extra-small mt-2 d-block">No outstanding dues</span>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+                <span class="text-muted small d-block mb-1">Pending Balance</span>
+                <div class="h2 fw-bold {% if total_pending > 0 %}text-warning{% else %}text-muted{% endif %} m-0">₹{{ total_pending|floatformat:2 }}</div>
+                <span class="text-muted extra-small mt-2 d-block">Remaining Dues</span>
             </div>
         </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+                <span class="text-muted small d-block mb-1">Overdue Records</span>
+                <div class="h2 fw-bold {% if overdue_count > 0 %}text-danger{% else %}text-muted{% endif %} m-0">{{ overdue_count }}</div>
+                <span class="text-muted extra-small mt-2 d-block">Past Due Date</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-file-invoice text-primary me-2"></i>My Fee Records</h5>
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Fee Type</th>
+                        <th>Academic Year & Semester</th>
+                        <th>Total Fee</th>
+                        <th>Paid</th>
+                        <th>Pending</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'fee_detail' f.pk %}" class="fw-bold text-primary text-decoration-none">{{ f.get_fee_type_display }}</a>
+                        </td>
+                        <td>
+                            <div>{{ f.academic_year.name }}</div>
+                            <small class="text-muted">Semester {{ f.semester.number }}</small>
+                        </td>
+                        <td class="fw-bold">₹{{ f.total_amount|floatformat:2 }}</td>
+                        <td class="text-success fw-semibold">₹{{ f.total_paid|floatformat:2 }}</td>
+                        <td class="{% if f.pending_amount > 0 %}text-danger{% else %}text-muted{% endif %} fw-semibold">₹{{ f.pending_amount|floatformat:2 }}</td>
+                        <td>{{ f.due_date|date:"d M Y" }}</td>
+                        <td>
+                            {% if f.computed_status == 'PAID' %}
+                            <span class="badge bg-success p-2 px-3">Paid</span>
+                            {% elif f.computed_status == 'PARTIAL' %}
+                            <span class="badge bg-warning text-dark p-2 px-3">Partial</span>
+                            {% elif f.computed_status == 'OVERDUE' %}
+                            <span class="badge bg-danger p-2 px-3">Overdue</span>
+                            {% else %}
+                            <span class="badge bg-info text-dark p-2 px-3">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'fee_detail' f.pk %}" class="btn btn-sm btn-outline-primary" title="View Fee Details">
+                                    <i class="fa-solid fa-eye me-1"></i> Details
+                                </a>
+                                {% if f.payments.exists %}
+                                <a href="{% url 'receipt_view' f.payments.first.pk %}" class="btn btn-sm btn-outline-success" title="View Latest Receipt">
+                                    <i class="fa-solid fa-receipt me-1"></i> Receipt
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-wallet fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No fee records available</h5>
+            <p class="text-muted small">No tuition or institutional fee records have been issued to your account yet.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

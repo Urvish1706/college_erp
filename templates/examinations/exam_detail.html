@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exam.name }} | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% if is_admin %}{% url 'exam_list' %}{% else %}{% url 'student_exams' %}{% endif %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back
+            </a>
+            <div>
+                <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-pen text-primary me-2"></i>{{ exam.name }}</h1>
+                <p class="text-muted small m-0">{{ exam.get_exam_type_display }} — {{ exam.academic_year.name }} (Semester {{ exam.semester.number }})</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            {% if is_admin %}
+            <form method="POST" action="{% url 'exam_toggle_publish' exam.pk %}" class="d-inline">
+                {% csrf_token %}
+                {% if exam.is_published %}
+                <button type="submit" class="btn btn-success"><i class="fa-solid fa-check-circle me-1"></i> Published</button>
+                {% else %}
+                <button type="submit" class="btn btn-outline-secondary"><i class="fa-solid fa-eye-slash me-1"></i> Publish Exam</button>
+                {% endif %}
+            </form>
+            <a href="{% url 'schedule_create' exam.pk %}" class="btn btn-primary"><i class="fa-solid fa-plus me-1"></i> Add Subject Schedule</a>
+            <a href="{% url 'exam_update' exam.pk %}" class="btn btn-warning"><i class="fa-solid fa-pen me-1"></i> Edit</a>
+            <a href="{% url 'exam_delete' exam.pk %}" class="btn btn-danger"><i class="fa-solid fa-trash me-1"></i> Delete</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Exam Overview Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: var(--surface);">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <small class="text-muted text-uppercase fw-bold">Exam Type</small>
+                <div class="fw-bold fs-5 text-primary mt-1">{{ exam.get_exam_type_display }}</div>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted text-uppercase fw-bold">Academic Year & Semester</small>
+                <div class="fw-bold mt-1">{{ exam.academic_year.name }}</div>
+                <div class="text-muted small">Semester {{ exam.semester.number }}</div>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted text-uppercase fw-bold">Scheduled Dates</small>
+                <div class="fw-bold mt-1">
+                    {% if exam.start_date and exam.end_date %}
+                    {{ exam.start_date|date:"d M Y" }} - {{ exam.end_date|date:"d M Y" }}
+                    {% else %}
+                    <span class="text-muted">Dates TBD</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted text-uppercase fw-bold">Status</small>
+                <div class="mt-1">
+                    {% if not exam.is_active %}
+                    <span class="badge bg-danger p-2">Inactive</span>
+                    {% elif exam.computed_status == "Today" %}
+                    <span class="badge bg-warning text-dark p-2">Today</span>
+                    {% elif exam.computed_status == "Completed" %}
+                    <span class="badge bg-secondary p-2">Completed</span>
+                    {% else %}
+                    <span class="badge bg-success p-2">Active</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if exam.description %}
+            <div class="col-12 mt-3 pt-3 border-top">
+                <small class="text-muted text-uppercase fw-bold">Description / Instructions</small>
+                <p class="m-0 mt-1" style="line-height: 1.6;">{{ exam.description }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Subject Schedules Section -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0"><i class="fa-solid fa-calendar-days text-primary me-2"></i>Subject Exam Schedule ({{ schedules|length }})</h5>
+            {% if is_admin %}
+            <a href="{% url 'schedule_create' exam.pk %}" class="btn btn-sm btn-primary"><i class="fa-solid fa-plus me-1"></i> Add Subject</a>
+            {% endif %}
+        </div>
+
+        {% if schedules %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Course / Semester</th>
+                        <th>Exam Date</th>
+                        <th>Time Range</th>
+                        <th>Room / Hall</th>
+                        <th>Invigilator</th>
+                        <th>Max Marks</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sch in schedules %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-primary">{{ sch.subject.name }}</div>
+                            <small class="text-muted">{{ sch.subject.code }}</small>
+                        </td>
+                        <td>
+                            <div>{{ sch.course.code }}</div>
+                            <small class="text-muted">Sem {{ sch.semester.number }}</small>
+                        </td>
+                        <td class="fw-semibold">{{ sch.exam_date|date:"d M Y (D)" }}</td>
+                        <td>{{ sch.start_time|time:"h:i A" }} - {{ sch.end_time|time:"h:i A" }}</td>
+                        <td>
+                            {% if sch.room %}
+                            <span class="badge bg-secondary-subtle text-secondary p-2">{{ sch.room }}</span>
+                            {% else %}
+                            <span class="text-muted">TBA</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sch.faculty %}
+                            <span class="fw-semibold">{{ sch.faculty.full_name }}</span>
+                            {% else %}
+                            <span class="text-muted">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">{{ sch.max_marks }}</td>
+                        <td>
+                            {% if sch.computed_status == "Completed" %}
+                            <span class="badge bg-secondary p-2">Completed</span>
+                            {% elif sch.computed_status == "Ongoing" or sch.computed_status == "Today" %}
+                            <span class="badge bg-warning text-dark p-2">Today</span>
+                            {% else %}
+                            <span class="badge bg-success p-2">Upcoming</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'schedule_detail' sch.pk %}" class="btn btn-sm btn-outline-primary" title="View Schedule Details"><i class="fa-solid fa-eye"></i></a>
+                                {% if is_admin %}
+                                <a href="{% url 'schedule_update' sch.pk %}" class="btn btn-sm btn-warning" title="Edit Schedule"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{% url 'schedule_delete' sch.pk %}" class="btn btn-sm btn-danger" title="Delete Schedule"><i class="fa-solid fa-trash"></i></a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-calendar-xmark fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No Subject Schedules Added</h5>
+            <p class="text-muted small mb-3">There are no subject-wise schedules created for this exam yet.</p>
+            {% if is_admin %}
+            <a href="{% url 'schedule_create' exam.pk %}" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> Add First Subject Schedule</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,20 +1,173 @@
 {% extends "base.html" %}
 
-{% block title %}Assignments Directory | College ERP{% endblock %}
+{% block title %}Assignments Management | College ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-lines text-primary me-2"></i>Assignments Management</h1>
-            <p class="text-muted small m-0">Institutional repository of coursework assignments.</p>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-list-check text-primary me-2"></i>Assignments Management</h1>
+            <p class="text-muted small m-0">Institutional repository and oversight of course assignments across all departments.</p>
+        </div>
+        <div>
+            <a href="{% url 'assignment_create' %}" class="btn btn-primary shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Create Assignment
+            </a>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4 text-center py-5" style="background: var(--card);">
-        <i class="fa-solid fa-folder-tree fs-1 text-primary mb-3"></i>
-        <h3 class="h5 fw-bold">Assignment Records</h3>
-        <p class="text-muted small m-0">Assignments are linked to respective subjects and managed directly by course faculty.</p>
+    <!-- Institutional KPI Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Total Assignments</small>
+                <div class="h3 fw-bold m-0 text-primary mt-1">{{ total_count }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Active</small>
+                <div class="h3 fw-bold m-0 text-success mt-1">{{ active_count }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Total Submissions</small>
+                <div class="h3 fw-bold m-0 text-info mt-1">{{ total_submissions }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Pending Grading</small>
+                <div class="h3 fw-bold m-0 text-warning mt-1">{{ pending_submissions }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Graded</small>
+                <div class="h3 fw-bold m-0 text-success mt-1">{{ graded_submissions }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background: var(--surface-2); color: var(--muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search title, subject, faculty or course...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="course" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Courses</option>
+                    {% for c in courses %}
+                    <option value="{{ c.id }}" {% if selected_course == c.id|stringformat:"i" %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="subject" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Subjects</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}" {% if selected_subject == s.id|stringformat:"i" %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                {% if q or selected_course or selected_subject %}
+                <a href="{% url 'assignment_list' %}" class="btn btn-secondary" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Faculty</th>
+                        <th>Course / Sem</th>
+                        <th>Due Date</th>
+                        <th>Submissions</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'assignment_detail' a.pk %}" class="fw-bold text-primary text-decoration-none">{{ a.title }}</a>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ a.subject.name }}</div>
+                            <small class="text-muted">{{ a.subject.code }}</small>
+                        </td>
+                        <td>{{ a.faculty.full_name }}</td>
+                        <td>
+                            <div>{{ a.course.code }}</div>
+                            <small class="text-muted">Sem {{ a.semester.number }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold {% if a.is_overdue %}text-danger{% endif %}">{{ a.due_date|date:"d M Y, h:i A" }}</div>
+                        </td>
+                        <td>
+                            <a href="{% url 'submission_list' a.pk %}" class="badge bg-primary-subtle text-primary p-2 px-3 text-decoration-none">
+                                {{ a.total_submissions }} ({{ a.graded_submissions }} Graded)
+                            </a>
+                        </td>
+                        <td>
+                            {% if not a.is_active %}
+                            <span class="badge bg-danger p-2 px-3">Inactive</span>
+                            {% elif a.is_overdue %}
+                            <span class="badge bg-warning text-dark p-2 px-3">Overdue</span>
+                            {% else %}
+                            <span class="badge bg-success p-2 px-3">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'assignment_detail' a.pk %}" class="btn btn-sm btn-outline-primary" title="View"><i class="fa-solid fa-eye"></i></a>
+                                <a href="{% url 'submission_list' a.pk %}" class="btn btn-sm btn-info text-white" title="Submissions"><i class="fa-solid fa-users"></i></a>
+                                <a href="{% url 'assignment_update' a.pk %}" class="btn btn-sm btn-warning" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{% url 'assignment_delete' a.pk %}" class="btn btn-sm btn-danger" title="Delete"><i class="fa-solid fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&course={{ selected_course }}&subject={{ selected_subject }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&course={{ selected_course }}&subject={{ selected_subject }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-box-open fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No assignments found</h5>
+            <p class="text-muted small">No assignments exist matching your filter criteria.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

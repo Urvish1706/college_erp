@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Fee Receipt — {{ payment.receipt_number }} | College ERP{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        body {
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+        .sidebar, .navbar, .no-print, .btn {
+            display: none !important;
+        }
+        .main-content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+        }
+        .receipt-card {
+            box-shadow: none !important;
+            border: 1px solid #000000 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 800px;">
+    <!-- Action Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <a href="{% url 'fee_detail' fee.pk %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Fee Details
+        </a>
+        <button onclick="window.print()" class="btn btn-primary shadow-sm">
+            <i class="fa-solid fa-print me-1"></i> Print Receipt
+        </button>
+    </div>
+
+    <!-- Printable Receipt Card -->
+    <div class="card border-0 shadow-lg rounded-4 p-5 receipt-card" style="background: var(--surface);">
+        <!-- College Header -->
+        <div class="text-center pb-4 mb-4 border-bottom">
+            <h2 class="fw-bold m-0 text-primary"><i class="fa-solid fa-graduation-cap me-2"></i>COLLEGE ERP INSTITUTION</h2>
+            <p class="text-muted small m-0">Official Fee Payment Receipt</p>
+            <div class="badge bg-primary-subtle text-primary mt-2 p-2 px-3 fs-6">Receipt No: {{ payment.receipt_number }}</div>
+        </div>
+
+        <!-- Receipt Meta Info -->
+        <div class="row g-3 mb-4">
+            <div class="col-6">
+                <small class="text-muted text-uppercase fw-bold d-block">Payment Date</small>
+                <div class="fw-bold fs-6">{{ payment.payment_date|date:"d M Y" }}</div>
+            </div>
+            <div class="col-6 text-end">
+                <small class="text-muted text-uppercase fw-bold d-block">Status</small>
+                <div class="fw-bold fs-6 text-success"><i class="fa-solid fa-check-circle me-1"></i> Payment Received</div>
+            </div>
+        </div>
+
+        <!-- Student & Course Info Box -->
+        <div class="p-3 rounded-3 mb-4" style="background: var(--surface-2);">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <small class="text-muted text-uppercase fw-bold">Student Name</small>
+                    <div class="fw-bold fs-5 text-primary">{{ student.full_name }}</div>
+                    <small class="text-muted">Student ID: {{ student.student_id }}</small>
+                </div>
+                <div class="col-md-6 border-start">
+                    <small class="text-muted text-uppercase fw-bold">Academic Details</small>
+                    <div class="fw-bold fs-6">{{ fee.course.name }} ({{ fee.course.code }})</div>
+                    <small class="text-muted">Semester {{ fee.semester.number }} | Academic Year: {{ fee.academic_year.name }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Breakdown Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered align-middle m-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Description</th>
+                        <th>Payment Method</th>
+                        <th>Transaction / Reference ID</th>
+                        <th class="text-end">Amount Paid</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ fee.get_fee_type_display }}</div>
+                            <small class="text-muted">Fee Payment Receipt</small>
+                        </td>
+                        <td><span class="badge bg-secondary-subtle text-secondary">{{ payment.get_payment_method_display }}</span></td>
+                        <td>{{ payment.transaction_id|default:payment.reference_number|default:"N/A" }}</td>
+                        <td class="text-end fw-bold text-success fs-5">₹{{ payment.amount|floatformat:2 }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="p-3 rounded-3 mb-4" style="background: var(--surface-2);">
+            <div class="row g-2 text-center text-md-start">
+                <div class="col-md-4">
+                    <small class="text-muted text-uppercase fw-bold">Total Fee Billed</small>
+                    <div class="fw-bold fs-6">₹{{ fee.total_amount|floatformat:2 }}</div>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted text-uppercase fw-bold">Total Paid to Date</small>
+                    <div class="fw-bold fs-6 text-success">₹{{ fee.total_paid|floatformat:2 }}</div>
+                </div>
+                <div class="col-md-4">
+                    <small class="text-muted text-uppercase fw-bold">Remaining Balance</small>
+                    <div class="fw-bold fs-6 {% if fee.pending_amount > 0 %}text-danger{% else %}text-muted{% endif %}">₹{{ fee.pending_amount|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Sign Off -->
+        <div class="d-flex justify-content-between align-items-end pt-4 border-top">
+            <div>
+                <small class="text-muted d-block">Computer generated receipt.</small>
+                <small class="text-muted">No physical signature required.</small>
+            </div>
+            <div class="text-end">
+                <div class="fw-bold text-uppercase border-top pt-2" style="width: 180px;">Accounts Department</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

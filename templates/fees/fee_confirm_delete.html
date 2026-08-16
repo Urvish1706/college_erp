@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Fee Record | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 600px;">
+    <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+        <div class="text-danger mb-3">
+            <i class="fa-solid fa-triangle-exclamation fa-3x"></i>
+        </div>
+        <h3 class="fw-bold mb-2">Delete Fee Record?</h3>
+        <p class="text-muted small mb-4">Are you sure you want to delete the fee record for <strong>"{{ fee.student.full_name }}"</strong> ({{ fee.get_fee_type_display }})?</p>
+
+        <div class="p-3 rounded-3 mb-4 text-start" style="background: var(--surface-2);">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Student:</span>
+                <span class="fw-bold">{{ fee.student.full_name }} (ID: {{ fee.student.student_id }})</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Fee Type:</span>
+                <span>{{ fee.get_fee_type_display }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Total Amount:</span>
+                <span class="fw-bold">₹{{ fee.total_amount }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-muted">Paid Amount:</span>
+                <span class="text-success fw-bold">₹{{ fee.total_paid }}</span>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'fee_detail' fee.pk %}" class="btn btn-secondary px-4">Cancel</a>
+                <button type="submit" class="btn btn-danger px-4"><i class="fa-solid fa-trash me-1"></i> Yes, Delete Fee Record</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

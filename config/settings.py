@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-u%wyw4o8po^fa#*yazj%jsg-7c^0*5!ne($o7we-uph-!#x!%h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
+    "config.apps.ConfigConfig",
     "accounts",
     "academics",
     "students",
@@ -52,6 +53,8 @@ INSTALLED_APPS = [
     "leave_management",
     "notices",
     "results",
+    "notifications",
+    "audit_logs",
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -80,6 +83,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.debug",
                 "django.template.context_processors.static",
+                "notifications.context_processors.unread_notifications",
             ],
         },
     },

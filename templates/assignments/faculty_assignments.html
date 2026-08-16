@@ -4,29 +4,137 @@
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-lines text-primary me-2"></i>Subject Assignments</h1>
-            <p class="text-muted small m-0">Manage course assignments for your allocated subjects.</p>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-signature text-primary me-2"></i>My Course Assignments</h1>
+            <p class="text-muted small m-0">Manage, review, and grade course assignments for your allocated subjects.</p>
+        </div>
+        <div>
+            <a href="{% url 'assignment_create' %}" class="btn btn-primary shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Create Assignment
+            </a>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
-        <h3 class="h6 fw-bold mb-3">Allocated Subjects</h3>
-        {% if assignments %}
-            <div class="list-group list-group-flush">
-                {% for a in assignments %}
-                    <div class="list-group-item bg-transparent border-bottom px-0 py-3 d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ a.subject.name }}</strong> ({{ a.subject.code }})
-                            <div class="text-muted extra-small">Semester {{ a.subject.semester.number }}</div>
-                        </div>
-                        <span class="badge bg-primary-subtle text-primary">Active Assignment</span>
-                    </div>
-                {% endfor %}
+    <!-- Search & Filters -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background: var(--surface-2); color: var(--muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search by title, subject or course...">
+                </div>
             </div>
+            <div class="col-md-3">
+                <select name="subject" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Subjects</option>
+                    {% for subj in subjects %}
+                    <option value="{{ subj.id }}" {% if selected_subject == subj.id|stringformat:"i" %}selected{% endif %}>{{ subj.name }} ({{ subj.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="semester" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Semesters</option>
+                    {% for sem in semesters %}
+                    <option value="{{ sem.id }}" {% if selected_semester == sem.id|stringformat:"i" %}selected{% endif %}>Semester {{ sem.number }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                {% if q or selected_subject or selected_semester %}
+                <a href="{% url 'faculty_assignments' %}" class="btn btn-secondary" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Assignments List -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Course & Sem</th>
+                        <th>Due Date</th>
+                        <th>Submissions</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'assignment_detail' a.pk %}" class="fw-bold text-primary text-decoration-none">{{ a.title }}</a>
+                            {% if a.attachment %}
+                            <i class="fa-solid fa-paperclip ms-1 text-muted" title="Attachment available"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ a.subject.name }}</div>
+                            <small class="text-muted">{{ a.subject.code }}</small>
+                        </td>
+                        <td>
+                            <div>{{ a.course.name }}</div>
+                            <small class="text-muted">Semester {{ a.semester.number }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold {% if a.is_overdue %}text-danger{% endif %}">{{ a.due_date|date:"d M Y, h:i A" }}</div>
+                        </td>
+                        <td>
+                            <a href="{% url 'submission_list' a.pk %}" class="badge bg-primary-subtle text-primary p-2 px-3 text-decoration-none" title="View Submissions">
+                                <i class="fa-solid fa-users me-1"></i> {{ a.total_submissions }} Submitted ({{ a.graded_submissions }} Graded)
+                            </a>
+                        </td>
+                        <td>
+                            {% if not a.is_active %}
+                            <span class="badge bg-danger p-2 px-3">Inactive</span>
+                            {% elif a.is_overdue %}
+                            <span class="badge bg-warning text-dark p-2 px-3">Overdue</span>
+                            {% else %}
+                            <span class="badge bg-success p-2 px-3">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'assignment_detail' a.pk %}" class="btn btn-sm btn-outline-primary" title="View Details"><i class="fa-solid fa-eye"></i></a>
+                                <a href="{% url 'submission_list' a.pk %}" class="btn btn-sm btn-info text-white" title="Submissions"><i class="fa-solid fa-list-check"></i></a>
+                                <a href="{% url 'assignment_update' a.pk %}" class="btn btn-sm btn-warning" title="Edit Assignment"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{% url 'assignment_delete' a.pk %}" class="btn btn-sm btn-danger" title="Delete Assignment"><i class="fa-solid fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&subject={{ selected_subject }}&semester={{ selected_semester }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&subject={{ selected_subject }}&semester={{ selected_semester }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
         {% else %}
-            <div class="text-center py-4 text-muted">No assigned subjects available.</div>
+        <div class="text-center py-5">
+            <i class="fa-solid fa-file-pen fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No assignments created yet</h5>
+            <p class="text-muted small">Create your first assignment for your allocated subjects to get started.</p>
+            <a href="{% url 'assignment_create' %}" class="btn btn-primary btn-sm mt-2"><i class="fa-solid fa-plus me-1"></i> Create Assignment Now</a>
+        </div>
         {% endif %}
     </div>
 </div>

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Examination Management | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Examination Management</h1>
+            <p class="text-muted small m-0">Institutional schedule management, publication controls, and examination oversight.</p>
+        </div>
+        <div>
+            <a href="{% url 'exam_create' %}" class="btn btn-primary shadow-sm">
+                <i class="fa-solid fa-plus me-1"></i> Add Examination
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Total Exams</small>
+                <div class="h3 fw-bold m-0 text-primary mt-1">{{ total_exams }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Published</small>
+                <div class="h3 fw-bold m-0 text-success mt-1">{{ published_exams }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Upcoming</small>
+                <div class="h3 fw-bold m-0 text-info mt-1">{{ upcoming_exams }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Today's Exams</small>
+                <div class="h3 fw-bold m-0 text-warning mt-1">{{ todays_exams }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center" style="background: var(--surface);">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Completed</small>
+                <div class="h3 fw-bold m-0 text-secondary mt-1">{{ completed_exams }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background: var(--surface-2); color: var(--muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search exam name...">
+                </div>
+            </div>
+            <div class="col-md-2">
+                <select name="exam_type" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Types</option>
+                    {% for key, label in exam_types %}
+                    <option value="{{ key }}" {% if selected_type == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="academic_year" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Academic Years</option>
+                    {% for ay in academic_years %}
+                    <option value="{{ ay.id }}" {% if selected_year == ay.id|stringformat:"i" %}selected{% endif %}>{{ ay.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="is_published" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Publication</option>
+                    <option value="1" {% if selected_published == "1" %}selected{% endif %}>Published</option>
+                    <option value="0" {% if selected_published == "0" %}selected{% endif %}>Unpublished</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                {% if q or selected_type or selected_year or selected_published or selected_semester or selected_active %}
+                <a href="{% url 'exam_list' %}" class="btn btn-secondary" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Exam Name</th>
+                        <th>Type</th>
+                        <th>Academic Year & Semester</th>
+                        <th>Date Range</th>
+                        <th>Schedules</th>
+                        <th>Publication</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'exam_detail' e.pk %}" class="fw-bold text-primary text-decoration-none">{{ e.name }}</a>
+                        </td>
+                        <td><span class="badge bg-primary-subtle text-primary p-2 px-3">{{ e.get_exam_type_display }}</span></td>
+                        <td>
+                            <div>{{ e.academic_year.name }}</div>
+                            <small class="text-muted">Semester {{ e.semester.number }}</small>
+                        </td>
+                        <td>
+                            {% if e.start_date and e.end_date %}
+                            <div>{{ e.start_date|date:"d M Y" }} - {{ e.end_date|date:"d M Y" }}</div>
+                            {% else %}
+                            <span class="text-muted">Dates TBD</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'exam_detail' e.pk %}" class="badge bg-secondary-subtle text-secondary p-2 px-3 text-decoration-none" title="Manage Schedules">
+                                <i class="fa-solid fa-calendar-days me-1"></i> {{ e.total_schedules }} Subjects
+                            </a>
+                        </td>
+                        <td>
+                            <form method="POST" action="{% url 'exam_toggle_publish' e.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                {% if e.is_published %}
+                                <button type="submit" class="btn btn-sm btn-success p-1 px-2" title="Click to Unpublish"><i class="fa-solid fa-check-circle me-1"></i> Published</button>
+                                {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary p-1 px-2" title="Click to Publish"><i class="fa-solid fa-eye-slash me-1"></i> Unpublished</button>
+                                {% endif %}
+                            </form>
+                        </td>
+                        <td>
+                            {% if not e.is_active %}
+                            <span class="badge bg-danger p-2 px-3">Inactive</span>
+                            {% elif e.computed_status == "Today" %}
+                            <span class="badge bg-warning text-dark p-2 px-3">Today</span>
+                            {% elif e.computed_status == "Completed" %}
+                            <span class="badge bg-secondary p-2 px-3">Completed</span>
+                            {% else %}
+                            <span class="badge bg-success p-2 px-3">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'exam_detail' e.pk %}" class="btn btn-sm btn-outline-primary" title="View & Manage Schedules"><i class="fa-solid fa-eye"></i></a>
+                                <a href="{% url 'schedule_create' e.pk %}" class="btn btn-sm btn-success" title="Add Subject Schedule"><i class="fa-solid fa-plus"></i></a>
+                                <a href="{% url 'exam_update' e.pk %}" class="btn btn-sm btn-warning" title="Edit Exam"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{% url 'exam_delete' e.pk %}" class="btn btn-sm btn-danger" title="Delete Exam"><i class="fa-solid fa-trash"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&exam_type={{ selected_type }}&academic_year={{ selected_year }}&is_published={{ selected_published }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&exam_type={{ selected_type }}&academic_year={{ selected_year }}&is_published={{ selected_published }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-box-open fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No examinations found</h5>
+            <p class="text-muted small">No examination records exist matching your filter parameters.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

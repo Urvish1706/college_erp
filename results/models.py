@@ -8,11 +8,14 @@ from faculty.models import Faculty
 class Exam(models.Model):
 
     EXAM_TYPE_CHOICES = [
-        ("UNIT_TEST", "Unit Test"),
         ("MIDTERM", "Mid Term"),
         ("INTERNAL", "Internal"),
         ("PRACTICAL", "Practical"),
         ("FINAL", "Final Exam"),
+        ("VIVA", "Viva"),
+        ("REMEDIAL", "Remedial"),
+        ("UNIT_TEST", "Unit Test"),
+        ("OTHER", "Other"),
     ]
 
     name = models.CharField(
@@ -46,8 +49,16 @@ class Exam(models.Model):
         null=True
     )
 
+    description = models.TextField(
+        blank=True
+    )
+
     is_published = models.BooleanField(
         default=False
+    )
+
+    is_active = models.BooleanField(
+        default=True
     )
 
     created_at = models.DateTimeField(
@@ -59,10 +70,27 @@ class Exam(models.Model):
     )
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-start_date", "-created_at"]
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.get_exam_type_display()})"
+
+    @property
+    def computed_status(self):
+        from django.utils import timezone
+        if not self.is_active:
+            return "Inactive"
+        today = timezone.now().date()
+        if self.start_date and today < self.start_date:
+            return "Upcoming"
+        elif self.end_date and today > self.end_date:
+            return "Completed"
+        elif self.start_date and self.end_date and self.start_date <= today <= self.end_date:
+            return "Today"
+        elif self.start_date and today == self.start_date:
+            return "Today"
+        else:
+            return "Upcoming"
 
 
 class Result(models.Model):

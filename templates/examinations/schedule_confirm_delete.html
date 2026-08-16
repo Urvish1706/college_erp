@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Schedule Entry | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 600px;">
+    <div class="card border-0 shadow-sm rounded-4 p-4 text-center" style="background: var(--surface);">
+        <div class="text-danger mb-3">
+            <i class="fa-solid fa-triangle-exclamation fa-3x"></i>
+        </div>
+        <h3 class="fw-bold mb-2">Delete Subject Schedule Entry?</h3>
+        <p class="text-muted small mb-4">Are you sure you want to remove <strong>"{{ schedule.subject.name }}"</strong> from {{ schedule.exam.name }}?</p>
+
+        <div class="p-3 rounded-3 mb-4 text-start" style="background: var(--surface-2);">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Subject:</span>
+                <span class="fw-bold">{{ schedule.subject.name }} ({{ schedule.subject.code }})</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Exam Date & Time:</span>
+                <span>{{ schedule.exam_date|date:"d M Y" }} ({{ schedule.start_time|time:"h:i A" }} - {{ schedule.end_time|time:"h:i A" }})</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-muted">Room:</span>
+                <span>{{ schedule.room|default:"TBA" }}</span>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'exam_detail' schedule.exam.pk %}" class="btn btn-secondary px-4">Cancel</a>
+                <button type="submit" class="btn btn-danger px-4"><i class="fa-solid fa-trash me-1"></i> Yes, Remove Schedule Entry</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

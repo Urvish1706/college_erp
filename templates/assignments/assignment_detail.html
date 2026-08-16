@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}{{ assignment.title }} | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="{% if role == 'STUDENT' %}{% url 'student_assignments' %}{% elif role == 'FACULTY' %}{% url 'faculty_assignments' %}{% else %}{% url 'assignment_list' %}{% endif %}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </a>
+                <span class="badge bg-primary-subtle text-primary">{{ assignment.subject.code }}</span>
+                {% if not assignment.is_active %}
+                <span class="badge bg-secondary">Closed</span>
+                {% elif assignment.is_overdue %}
+                <span class="badge bg-danger">Overdue</span>
+                {% else %}
+                <span class="badge bg-success">Active</span>
+                {% endif %}
+            </div>
+            <h1 class="h3 fw-bold m-0">{{ assignment.title }}</h1>
+        </div>
+        <div class="d-flex gap-2">
+            {% if role == "STUDENT" %}
+                {% if submission %}
+                    <a href="{% url 'my_submission' submission.pk %}" class="btn btn-success"><i class="fa-solid fa-file-check me-1"></i> View My Submission</a>
+                {% else %}
+                    <a href="{% url 'submit_assignment' assignment.pk %}" class="btn btn-primary"><i class="fa-solid fa-upload me-1"></i> Submit Assignment</a>
+                {% endif %}
+            {% endif %}
+
+            {% if role == "FACULTY" or is_admin %}
+                <a href="{% url 'submission_list' assignment.pk %}" class="btn btn-info text-white"><i class="fa-solid fa-users me-1"></i> View Submissions ({{ submissions_summary.total }})</a>
+                <a href="{% url 'assignment_update' assignment.pk %}" class="btn btn-warning"><i class="fa-solid fa-pen me-1"></i> Edit</a>
+                <a href="{% url 'assignment_delete' assignment.pk %}" class="btn btn-danger"><i class="fa-solid fa-trash me-1"></i> Delete</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Details Column -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: var(--surface);">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i>Assignment Instructions & Description</h5>
+                <div class="p-3 rounded-3 mb-3" style="background: var(--surface-2); color: var(--text-secondary); line-height: 1.7; whitespace: pre-wrap;">
+                    {% if assignment.description %}
+                        {{ assignment.description|linebreaks }}
+                    {% else %}
+                        <em class="text-muted">No additional instructions provided for this assignment.</em>
+                    {% endif %}
+                </div>
+
+                {% if assignment.attachment %}
+                <div class="p-3 rounded-3 d-flex align-items-center justify-content-between border" style="background: var(--surface-2); border-color: var(--border) !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="fa-solid fa-paperclip fa-2x text-primary"></i>
+                        <div>
+                            <div class="fw-bold">Assignment Attachment</div>
+                            <small class="text-muted">Reference files and resource document provided by faculty.</small>
+                        </div>
+                    </div>
+                    <a href="{{ assignment.attachment.url }}" download class="btn btn-primary btn-sm"><i class="fa-solid fa-download me-1"></i> Download File</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Student Submission Status Card -->
+            {% if role == "STUDENT" %}
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-clipboard-check text-primary me-2"></i>Your Submission Status</h5>
+                {% if submission %}
+                <div class="p-3 rounded-3 border" style="background: var(--surface-2); border-color: var(--border) !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge {% if submission.status == 'GRADED' %}bg-success{% elif submission.status == 'LATE' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %} p-2 px-3">
+                            {{ submission.get_status_display }}
+                        </span>
+                        <small class="text-muted">Submitted on: {{ submission.submitted_at|date:"d M Y, h:i A" }}</small>
+                    </div>
+
+                    {% if submission.status == "GRADED" %}
+                    <div class="mt-3 p-3 bg-success-subtle text-success rounded-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-bold h5 m-0">Marks: {{ submission.marks }} / {{ assignment.max_marks }}</div>
+                                <small>Percentage: {{ submission.percentage }}%</small>
+                            </div>
+                            <i class="fa-solid fa-award fa-2x"></i>
+                        </div>
+                        {% if submission.feedback %}
+                        <hr class="my-2">
+                        <div><strong>Faculty Feedback:</strong> {{ submission.feedback }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <a href="{% url 'my_submission' submission.pk %}" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-eye me-1"></i> View Full Submission</a>
+                        {% if not assignment.is_overdue and submission.status != "GRADED" %}
+                        <a href="{% url 'submit_assignment' assignment.pk %}" class="btn btn-sm btn-primary ms-2"><i class="fa-solid fa-pen me-1"></i> Update Submission</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="p-4 text-center rounded-3 border" style="background: var(--surface-2); border-color: var(--border) !important;">
+                    <i class="fa-solid fa-circle-exclamation fa-2x text-warning mb-2"></i>
+                    <h6 class="fw-bold">No Submission File Uploaded Yet</h6>
+                    <p class="text-muted small mb-3">Make sure to submit your work before the deadline ({{ assignment.due_date|date:"d M Y, h:i A" }}).</p>
+                    <a href="{% url 'submit_assignment' assignment.pk %}" class="btn btn-primary"><i class="fa-solid fa-upload me-1"></i> Submit Assignment Now</a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar Info Column -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: var(--surface);">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-circle-info text-primary me-2"></i>Assignment Details</h5>
+                <ul class="list-group list-group-flush border-0">
+                    <li class="list-group-item bg-transparent px-0 py-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="text-muted"><i class="fa-solid fa-book me-2"></i>Subject:</span>
+                        <span class="fw-bold">{{ assignment.subject.name }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="text-muted"><i class="fa-solid fa-graduation-cap me-2"></i>Course:</span>
+                        <span class="fw-bold">{{ assignment.course.name }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="text-muted"><i class="fa-solid fa-layer-group me-2"></i>Semester:</span>
+                        <span class="fw-bold">Semester {{ assignment.semester.number }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="text-muted"><i class="fa-solid fa-user-tie me-2"></i>Faculty:</span>
+                        <span class="fw-bold">{{ assignment.faculty.full_name }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="text-muted"><i class="fa-solid fa-calendar me-2"></i>Assigned Date:</span>
+                        <span>{{ assignment.assigned_date|date:"d M Y" }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2 border-bottom d-flex justify-content-between align-items-center">
+                        <span class="text-muted"><i class="fa-solid fa-clock me-2"></i>Due Date:</span>
+                        <span class="fw-bold {% if assignment.is_overdue %}text-danger{% endif %}">{{ assignment.due_date|date:"d M Y, h:i A" }}</span>
+                    </li>
+                    <li class="list-group-item bg-transparent px-0 py-2 border-0 d-flex justify-content-between align-items-center">
+                        <span class="text-muted"><i class="fa-solid fa-star me-2"></i>Maximum Marks:</span>
+                        <span class="badge bg-primary fs-6">{{ assignment.max_marks }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            {% if role == "FACULTY" or is_admin %}
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-pie text-primary me-2"></i>Submissions Summary</h5>
+                <div class="row g-2 text-center mb-3">
+                    <div class="col-4">
+                        <div class="p-2 rounded-3" style="background: var(--surface-2);">
+                            <small class="text-muted d-block">Total</small>
+                            <span class="h5 fw-bold text-primary">{{ submissions_summary.total }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded-3" style="background: var(--surface-2);">
+                            <small class="text-muted d-block">Graded</small>
+                            <span class="h5 fw-bold text-success">{{ submissions_summary.graded }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 rounded-3" style="background: var(--surface-2);">
+                            <small class="text-muted d-block">Pending</small>
+                            <span class="h5 fw-bold text-warning">{{ submissions_summary.pending }}</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'submission_list' assignment.pk %}" class="btn btn-outline-primary w-100"><i class="fa-solid fa-list-check me-1"></i> Manage All Submissions</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

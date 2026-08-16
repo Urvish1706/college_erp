@@ -1,57 +1,129 @@
 {% extends "base.html" %}
 
-{% block title %}My Exams | College ERP{% endblock %}
+{% block title %}My Examinations | College ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-pen text-primary me-2"></i>My Examination Schedule</h1>
-            <p class="text-muted small m-0">Upcoming and scheduled examinations for your semester.</p>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-pen text-primary me-2"></i>My Examinations</h1>
+            <p class="text-muted small m-0">View your published examination schedules, room assignments, and guidelines for {{ student.course.code }} (Semester {{ student.semester.number }}).</p>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+    <!-- Navigation Tabs & Search -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <!-- Tabs -->
+            <ul class="nav nav-pills gap-2">
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'upcoming' %}active{% endif %}" href="?tab=upcoming&q={{ q }}">
+                        <i class="fa-solid fa-calendar-days me-1"></i> Upcoming <span class="badge bg-primary ms-1">{{ upcoming_count }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'today' %}active{% endif %}" href="?tab=today&q={{ q }}">
+                        <i class="fa-solid fa-clock me-1"></i> Today's Exams <span class="badge bg-warning text-dark ms-1">{{ today_count }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'completed' %}active{% endif %}" href="?tab=completed&q={{ q }}">
+                        <i class="fa-solid fa-check-double me-1"></i> Completed <span class="badge bg-secondary ms-1">{{ completed_count }}</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Search Form -->
+            <form method="GET" class="d-flex gap-2">
+                <input type="hidden" name="tab" value="{{ tab }}">
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background: var(--surface-2); color: var(--muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search exam or subject...">
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Exam Table / Cards -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
         <div class="table-responsive">
             <table class="table table-hover align-middle m-0 small">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Exam Name</th>
-                        <th>Type</th>
-                        <th>Academic Year</th>
-                        <th>Semester</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Publication Status</th>
+                        <th>Examination Name</th>
+                        <th>Subject</th>
+                        <th>Exam Date</th>
+                        <th>Time Range</th>
+                        <th>Room / Hall</th>
+                        <th>Max Marks</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for exam in exams %}
+                    {% for sch in page_obj %}
                     <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td><strong>{{ exam.name }}</strong></td>
-                        <td><span class="badge bg-info-subtle text-info">{{ exam.get_exam_type_display }}</span></td>
-                        <td>{{ exam.academic_year.name }}</td>
-                        <td>{{ exam.semester.name }}</td>
-                        <td>{{ exam.start_date|date:"d M Y"|default:"TBA" }}</td>
-                        <td>{{ exam.end_date|date:"d M Y"|default:"TBA" }}</td>
                         <td>
-                            {% if exam.is_published %}
-                                <span class="badge bg-success-subtle text-success"><i class="fa-solid fa-check me-1"></i>Results Published</span>
+                            <div class="fw-bold text-primary">{{ sch.exam.name }}</div>
+                            <span class="badge bg-primary-subtle text-primary mt-1">{{ sch.exam.get_exam_type_display }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ sch.subject.name }}</div>
+                            <small class="text-muted">{{ sch.subject.code }}</small>
+                        </td>
+                        <td class="fw-semibold">{{ sch.exam_date|date:"d M Y (D)" }}</td>
+                        <td>{{ sch.start_time|time:"h:i A" }} - {{ sch.end_time|time:"h:i A" }}</td>
+                        <td>
+                            {% if sch.room %}
+                            <span class="badge bg-secondary-subtle text-secondary p-2">{{ sch.room }}</span>
                             {% else %}
-                                <span class="badge bg-warning-subtle text-warning"><i class="fa-solid fa-clock me-1"></i>Results Pending</span>
+                            <span class="text-muted">TBA</span>
                             {% endif %}
                         </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">No scheduled examinations found for your semester.</td>
+                        <td class="fw-bold">{{ sch.max_marks }}</td>
+                        <td>
+                            {% if sch.computed_status == "Completed" %}
+                            <span class="badge bg-secondary p-2 px-3">Completed</span>
+                            {% elif sch.computed_status == "Ongoing" or sch.computed_status == "Today" %}
+                            <span class="badge bg-warning text-dark p-2 px-3">Today</span>
+                            {% else %}
+                            <span class="badge bg-success p-2 px-3">Upcoming</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'schedule_detail' sch.pk %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                <i class="fa-solid fa-eye me-1"></i> Details
+                            </a>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&tab={{ tab }}&q={{ q }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&tab={{ tab }}&q={{ q }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-calendar-xmark fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No Examinations Scheduled</h5>
+            <p class="text-muted small">No {{ tab }} examinations found for your course and semester.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

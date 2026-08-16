@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Fee Details — {{ fee.student.full_name }} | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% if is_admin %}{% url 'fee_list' %}{% else %}{% url 'student_fees' %}{% endif %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back
+            </a>
+            <div>
+                <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-invoice-dollar text-primary me-2"></i>{{ fee.get_fee_type_display }}</h1>
+                <p class="text-muted small m-0">{{ fee.student.full_name }} (ID: {{ fee.student.student_id }}) — {{ fee.course.code }} (Semester {{ fee.semester.number }})</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            {% if is_admin %}
+                {% if fee.pending_amount > 0 %}
+                <a href="{% url 'payment_create' fee.pk %}" class="btn btn-success"><i class="fa-solid fa-cash-register me-1"></i> Record Payment</a>
+                {% endif %}
+                <a href="{% url 'fee_update' fee.pk %}" class="btn btn-warning"><i class="fa-solid fa-pen me-1"></i> Edit Fee</a>
+                <a href="{% url 'fee_delete' fee.pk %}" class="btn btn-danger"><i class="fa-solid fa-trash me-1"></i> Delete Fee</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Overview Financial Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: var(--surface);">
+        <div class="row g-4 text-center">
+            <div class="col-md-3 border-end">
+                <small class="text-muted text-uppercase fw-bold d-block">Total Billed Fee</small>
+                <div class="h3 fw-bold text-primary mt-1">₹{{ fee.total_amount|floatformat:2 }}</div>
+            </div>
+            <div class="col-md-3 border-end">
+                <small class="text-muted text-uppercase fw-bold d-block">Total Amount Paid</small>
+                <div class="h3 fw-bold text-success mt-1">₹{{ fee.total_paid|floatformat:2 }}</div>
+            </div>
+            <div class="col-md-3 border-end">
+                <small class="text-muted text-uppercase fw-bold d-block">Remaining Balance</small>
+                <div class="h3 fw-bold {% if fee.pending_amount > 0 %}text-danger{% else %}text-muted{% endif %} mt-1">₹{{ fee.pending_amount|floatformat:2 }}</div>
+            </div>
+            <div class="col-md-3">
+                <small class="text-muted text-uppercase fw-bold d-block">Fee Status</small>
+                <div class="mt-2">
+                    {% if fee.computed_status == 'PAID' %}
+                    <span class="badge bg-success p-2 px-3 fs-6"><i class="fa-solid fa-circle-check me-1"></i> Fully Paid</span>
+                    {% elif fee.computed_status == 'PARTIAL' %}
+                    <span class="badge bg-warning text-dark p-2 px-3 fs-6"><i class="fa-solid fa-clock me-1"></i> Partial Payment</span>
+                    {% elif fee.computed_status == 'OVERDUE' %}
+                    <span class="badge bg-danger p-2 px-3 fs-6"><i class="fa-solid fa-triangle-exclamation me-1"></i> Overdue</span>
+                    {% else %}
+                    <span class="badge bg-info text-dark p-2 px-3 fs-6"><i class="fa-solid fa-hourglass-start me-1"></i> Pending Payment</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if fee.description %}
+        <div class="mt-3 pt-3 border-top text-start">
+            <small class="text-muted text-uppercase fw-bold">Description / Guidelines</small>
+            <p class="m-0 mt-1" style="line-height: 1.6;">{{ fee.description }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Payment History Section -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold m-0"><i class="fa-solid fa-receipt text-primary me-2"></i>Payment History ({{ payments|length }})</h5>
+            {% if is_admin and fee.pending_amount > 0 %}
+            <a href="{% url 'payment_create' fee.pk %}" class="btn btn-sm btn-success"><i class="fa-solid fa-plus me-1"></i> Record New Payment</a>
+            {% endif %}
+        </div>
+
+        {% if payments %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Receipt No</th>
+                        <th>Payment Date</th>
+                        <th>Amount Paid</th>
+                        <th>Method</th>
+                        <th>Transaction / Ref ID</th>
+                        <th>Notes</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ p.receipt_number }}</td>
+                        <td>{{ p.payment_date|date:"d M Y" }}</td>
+                        <td class="fw-bold text-success fs-6">₹{{ p.amount|floatformat:2 }}</td>
+                        <td><span class="badge bg-secondary-subtle text-secondary p-2">{{ p.get_payment_method_display }}</span></td>
+                        <td>{{ p.transaction_id|default:p.reference_number|default:"N/A" }}</td>
+                        <td>{{ p.notes|default:"—" }}</td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'receipt_view' p.pk %}" class="btn btn-sm btn-outline-primary" title="View & Print Receipt">
+                                    <i class="fa-solid fa-print me-1"></i> Receipt
+                                </a>
+                                {% if is_admin %}
+                                <a href="{% url 'payment_delete' p.pk %}" class="btn btn-sm btn-danger" title="Delete Payment Record">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-receipt fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No Payments Recorded Yet</h5>
+            <p class="text-muted small mb-3">No payments have been submitted against this fee record yet.</p>
+            {% if is_admin %}
+            <a href="{% url 'payment_create' fee.pk %}" class="btn btn-success btn-sm"><i class="fa-solid fa-plus me-1"></i> Record Initial Payment</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

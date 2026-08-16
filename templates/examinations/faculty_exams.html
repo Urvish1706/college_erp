@@ -1,62 +1,149 @@
 {% extends "base.html" %}
 
-{% block title %}Exams Schedule | College ERP{% endblock %}
+{% block title %}Faculty Exam Schedules | College ERP{% endblock %}
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-pen text-primary me-2"></i>Faculty Exam Overview</h1>
-            <p class="text-muted small m-0">Exams requiring result entry or academic evaluation.</p>
+            <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Faculty Exam Schedules</h1>
+            <p class="text-muted small m-0">View examination schedules for your taught subjects and assigned invigilation duties.</p>
         </div>
-        <a href="{% url 'result_entry' %}" class="btn btn-primary rounded-3 btn-sm">
-            <i class="fa-solid fa-pen-to-square me-1"></i>Enter Marks
-        </a>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
+    <!-- Navigation Tabs & Search -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <!-- Tabs -->
+            <ul class="nav nav-pills gap-2">
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'all' or not tab %}active{% endif %}" href="?tab=all&q={{ q }}">
+                        <i class="fa-solid fa-layer-group me-1"></i> All Teaching Subjects
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'invigilation' %}active{% endif %}" href="?tab=invigilation&q={{ q }}">
+                        <i class="fa-solid fa-user-shield me-1"></i> My Invigilation Duties
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'today' %}active{% endif %}" href="?tab=today&q={{ q }}">
+                        <i class="fa-solid fa-clock me-1"></i> Today's Exams
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tab == 'upcoming' %}active{% endif %}" href="?tab=upcoming&q={{ q }}">
+                        <i class="fa-solid fa-calendar-days me-1"></i> Upcoming
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Search Form -->
+            <form method="GET" class="d-flex gap-2">
+                <input type="hidden" name="tab" value="{{ tab }}">
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background: var(--surface-2); color: var(--muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search exam, subject, room...">
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-search"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
         <div class="table-responsive">
             <table class="table table-hover align-middle m-0 small">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Exam Name</th>
-                        <th>Type</th>
-                        <th>Academic Year</th>
-                        <th>Semester</th>
-                        <th>Publication Status</th>
-                        <th>Action</th>
+                        <th>Examination</th>
+                        <th>Subject</th>
+                        <th>Course / Sem</th>
+                        <th>Exam Date</th>
+                        <th>Time Range</th>
+                        <th>Room / Hall</th>
+                        <th>Invigilator</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for exam in exams %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td><strong>{{ exam.name }}</strong></td>
-                        <td><span class="badge bg-info-subtle text-info">{{ exam.get_exam_type_display }}</span></td>
-                        <td>{{ exam.academic_year.name }}</td>
-                        <td>{{ exam.semester.name }}</td>
+                    {% for sch in page_obj %}
+                    <tr {% if faculty and sch.faculty_id == faculty.id %}class="table-primary-subtle"{% endif %}>
                         <td>
-                            {% if exam.is_published %}
-                                <span class="badge bg-success-subtle text-success">Published</span>
+                            <div class="fw-bold text-primary">{{ sch.exam.name }}</div>
+                            <span class="badge bg-primary-subtle text-primary mt-1">{{ sch.exam.get_exam_type_display }}</span>
+                        </td>
+                        <td>
+                            <div class="fw-bold">{{ sch.subject.name }}</div>
+                            <small class="text-muted">{{ sch.subject.code }}</small>
+                        </td>
+                        <td>
+                            <div>{{ sch.course.code }}</div>
+                            <small class="text-muted">Sem {{ sch.semester.number }}</small>
+                        </td>
+                        <td class="fw-semibold">{{ sch.exam_date|date:"d M Y (D)" }}</td>
+                        <td>{{ sch.start_time|time:"h:i A" }} - {{ sch.end_time|time:"h:i A" }}</td>
+                        <td>
+                            {% if sch.room %}
+                            <span class="badge bg-secondary-subtle text-secondary p-2">{{ sch.room }}</span>
                             {% else %}
-                                <span class="badge bg-warning-subtle text-warning">Draft / Unpublished</span>
+                            <span class="text-muted">TBA</span>
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'result_entry' %}?exam={{ exam.id }}" class="btn btn-sm btn-outline-primary rounded-3">
-                                <i class="fa-solid fa-pen me-1"></i>Enter Results
+                            {% if sch.faculty %}
+                                {% if faculty and sch.faculty_id == faculty.id %}
+                                <span class="badge bg-primary p-2"><i class="fa-solid fa-user-check me-1"></i> You (Invigilator)</span>
+                                {% else %}
+                                <span>{{ sch.faculty.full_name }}</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="text-muted">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if sch.computed_status == "Completed" %}
+                            <span class="badge bg-secondary p-2 px-3">Completed</span>
+                            {% elif sch.computed_status == "Ongoing" or sch.computed_status == "Today" %}
+                            <span class="badge bg-warning text-dark p-2 px-3">Today</span>
+                            {% else %}
+                            <span class="badge bg-success p-2 px-3">Upcoming</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'schedule_detail' sch.pk %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                <i class="fa-solid fa-eye me-1"></i> Details
                             </a>
                         </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">No examinations created yet.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&tab={{ tab }}&q={{ q }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&tab={{ tab }}&q={{ q }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-calendar-xmark fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">No Exam Schedules Found</h5>
+            <p class="text-muted small">No examination schedules match your current view or filter.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

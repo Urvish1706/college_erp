@@ -5,10 +5,10 @@
         <span>College ERP</span>
     </div>
 
-    {% if user.is_superuser or user.profile.role == "ADMIN" %}
+    {% if user.is_superuser or user.is_staff or user.profile.role == "ADMIN" or user.profile.role == "ACCOUNTANT" or user.profile.role == "HOD" or user.profile.role == "EXAM_CELL" %}
 
         <!-- ========================================= -->
-        <!-- ADMIN SIDEBAR -->
+        <!-- ADMIN / STAFF / MANAGEMENT SIDEBAR -->
         <!-- ========================================= -->
 
         <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
@@ -16,7 +16,7 @@
             <span>Dashboard</span>
         </a>
 
-        <a href="{% url 'student_list' %}" class="sidebar-link {% if 'student' in request.resolver_match.url_name and request.resolver_match.url_name != 'student_attendance' and request.resolver_match.url_name != 'student_results' %}active{% endif %}">
+        <a href="{% url 'student_list' %}" class="sidebar-link {% if 'student' in request.resolver_match.url_name and request.resolver_match.url_name != 'student_attendance' and request.resolver_match.url_name != 'student_results' and request.resolver_match.url_name != 'student_fees' %}active{% endif %}">
             <i class="fa-solid fa-user-graduate"></i>
             <span>Students</span>
         </a>
@@ -71,8 +71,8 @@
             <span>Assignments</span>
         </a>
 
-        <a href="{% url 'fee_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'fee_list' %}active{% endif %}">
-            <i class="fa-solid fa-money-bill"></i>
+        <a href="{% url 'fee_list' %}" class="sidebar-link {% if 'fee' in request.resolver_match.url_name and request.resolver_match.url_name != 'student_fees' %}active{% endif %}">
+            <i class="fa-solid fa-wallet"></i>
             <span>Fees</span>
         </a>
 
@@ -84,6 +84,16 @@
         <a href="{% url 'reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
             <i class="fa-solid fa-chart-pie"></i>
             <span>Reports</span>
+        </a>
+
+        <a href="{% url 'notification_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">
+            <i class="fa-solid fa-bell"></i>
+            <span>Notifications</span>
+        </a>
+
+        <a href="{% url 'audit_log_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'audit_log_list' %}active{% endif %}">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Audit Logs</span>
         </a>
 
         <a href="/admin/" class="sidebar-link" target="_blank">
@@ -118,6 +128,11 @@
             <span>My Subjects</span>
         </a>
 
+        <a href="{% url 'faculty_timetable' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_timetable' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>My Timetable</span>
+        </a>
+
         <a href="{% url 'mark_attendance' %}" class="sidebar-link {% if request.resolver_match.url_name == 'mark_attendance' %}active{% endif %}">
             <i class="fa-solid fa-calendar-check"></i>
             <span>Mark Attendance</span>
@@ -128,29 +143,34 @@
             <span>Attendance History</span>
         </a>
 
-        <a href="{% url 'result_entry' %}" class="sidebar-link {% if request.resolver_match.url_name == 'result_entry' %}active{% endif %}">
-            <i class="fa-solid fa-pen-to-square"></i>
-            <span>Enter Results</span>
-        </a>
-
-        <a href="{% url 'faculty_timetable' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_timetable' %}active{% endif %}">
-            <i class="fa-solid fa-calendar-days"></i>
-            <span>My Timetable</span>
-        </a>
-
         <a href="{% url 'faculty_assignments' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_assignments' %}active{% endif %}">
             <i class="fa-solid fa-file-lines"></i>
             <span>Assignments</span>
         </a>
 
         <a href="{% url 'faculty_exams' %}" class="sidebar-link {% if request.resolver_match.url_name == 'faculty_exams' %}active{% endif %}">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>My Exams</span>
+        </a>
+
+        <a href="{% url 'exam_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'exam_list' %}active{% endif %}">
             <i class="fa-solid fa-pen"></i>
             <span>Exams</span>
+        </a>
+
+        <a href="{% url 'result_entry' %}" class="sidebar-link {% if request.resolver_match.url_name == 'result_entry' %}active{% endif %}">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span>Results</span>
         </a>
 
         <a href="{% url 'notice_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}">
             <i class="fa-solid fa-bullhorn"></i>
             <span>Notices</span>
+        </a>
+
+        <a href="{% url 'notification_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">
+            <i class="fa-solid fa-bell"></i>
+            <span>Notifications</span>
         </a>
 
         <a href="{% url 'logout' %}" class="sidebar-link text-danger mt-3">
@@ -200,14 +220,19 @@
             <span>My Exams</span>
         </a>
 
-        <a href="{% url 'student_fees' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_fees' %}active{% endif %}">
+        <a href="{% url 'student_fees' %}" class="sidebar-link {% if request.resolver_match.url_name == 'student_fees' or request.resolver_match.url_name == 'fee_detail' or request.resolver_match.url_name == 'receipt_view' %}active{% endif %}">
             <i class="fa-solid fa-wallet"></i>
             <span>My Fees</span>
         </a>
 
         <a href="{% url 'notice_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}">
-            <i class="fa-solid fa-bell"></i>
+            <i class="fa-solid fa-bullhorn"></i>
             <span>Notices</span>
+        </a>
+
+        <a href="{% url 'notification_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'notification_list' %}active{% endif %}">
+            <i class="fa-solid fa-bell"></i>
+            <span>Notifications</span>
         </a>
 
         <a href="{% url 'logout' %}" class="sidebar-link text-danger mt-3">

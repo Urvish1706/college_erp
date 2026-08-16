@@ -34,6 +34,10 @@ def login_view(request):
 
             login(request, user)
 
+            from audit_logs.models import log_action
+            ip = request.META.get("REMOTE_ADDR")
+            log_action(user, "User Login", "User", user.id, f"User '{user.username}' logged in successfully.", ip_address=ip)
+
             messages.success(
                 request,
                 f"Welcome back, {user.first_name or user.username}!"
@@ -60,6 +64,11 @@ def login_view(request):
 
 @login_required
 def logout_view(request):
+
+    user = request.user
+    from audit_logs.models import log_action
+    ip = request.META.get("REMOTE_ADDR")
+    log_action(user, "User Logout", "User", user.id, f"User '{user.username}' logged out.", ip_address=ip)
 
     logout(request)
 

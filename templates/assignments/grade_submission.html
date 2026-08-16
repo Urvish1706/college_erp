@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Grade Submission | College ERP{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0" style="max-width: 900px;">
+    <div class="d-flex align-items-center gap-2 mb-4">
+        <a href="{% url 'submission_list' assignment.pk %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Submissions
+        </a>
+        <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Grade Student Submission</h1>
+    </div>
+
+    <div class="row g-4">
+        <!-- Submitted Work Column -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="background: var(--surface);">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-user-graduate text-primary me-2"></i>Student Details</h5>
+                <div class="p-3 rounded-3 mb-3" style="background: var(--surface-2);">
+                    <div class="fw-bold fs-5 text-primary">{{ submission.student.full_name }}</div>
+                    <div class="text-muted small">Student ID: {{ submission.student.student_id }}</div>
+                    <div class="text-muted small">Submitted on: {{ submission.submitted_at|date:"d M Y, h:i A" }}</div>
+                    {% if submission.status == 'LATE' %}
+                    <span class="badge bg-warning text-dark mt-2">Late Submission</span>
+                    {% endif %}
+                </div>
+
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-file-lines text-primary me-2"></i>Submitted Work</h5>
+
+                {% if submission.submission_file %}
+                <div class="p-3 rounded-3 mb-3 d-flex align-items-center justify-content-between border" style="background: var(--surface-2); border-color: var(--border) !important;">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="fa-solid fa-paperclip fa-2x text-primary"></i>
+                        <div>
+                            <div class="fw-bold">Submitted File</div>
+                            <small class="text-muted">{{ submission.submission_file.name }}</small>
+                        </div>
+                    </div>
+                    <a href="{{ submission.submission_file.url }}" download class="btn btn-primary btn-sm"><i class="fa-solid fa-download me-1"></i> Download</a>
+                </div>
+                {% endif %}
+
+                {% if submission.submission_text %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Written Answer:</label>
+                    <div class="p-3 rounded-3" style="background: var(--surface-2); line-height: 1.6; white-space: pre-wrap;">
+                        {{ submission.submission_text }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Grade Form Column -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-award text-primary me-2"></i>Enter Grade & Feedback</h5>
+                
+                <form method="POST">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger mb-3">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Marks (Out of {{ assignment.max_marks }}) <span class="text-danger">*</span></label>
+                        {{ form.marks }}
+                        {% if form.marks.errors %}<div class="text-danger small mt-1">{{ form.marks.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Submission Status</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}<div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Feedback Comments</label>
+                        {{ form.feedback }}
+                        {% if form.feedback.errors %}<div class="text-danger small mt-1">{{ form.feedback.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a href="{% url 'submission_list' assignment.pk %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success px-4"><i class="fa-solid fa-check me-1"></i> Save Grade</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

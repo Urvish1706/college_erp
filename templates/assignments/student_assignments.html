@@ -4,19 +4,132 @@
 
 {% block content %}
 <div class="container-fluid p-0">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <h1 class="h3 fw-bold m-0"><i class="fa-solid fa-file-lines text-primary me-2"></i>My Course Assignments</h1>
-            <p class="text-muted small m-0">Track and submit course assignments for your enrolled semester.</p>
+            <p class="text-muted small m-0">Track, view, and submit course assignments for your enrolled semester.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-primary-subtle text-primary p-2 px-3 rounded-pill fw-semibold">
+                <i class="fa-solid fa-clock me-1"></i> {{ pending_count }} Pending
+            </span>
+            <span class="badge bg-warning-subtle text-warning p-2 px-3 rounded-pill fw-semibold">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ due_soon_count }} Due Soon
+            </span>
+            <span class="badge bg-success-subtle text-success p-2 px-3 rounded-pill fw-semibold">
+                <i class="fa-solid fa-circle-check me-1"></i> {{ submitted_count }} Submitted
+            </span>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--card);">
-        <div class="text-center py-5 text-muted">
-            <i class="fa-solid fa-file-circle-check fs-1 text-primary mb-3"></i>
-            <h3 class="h5 fw-bold text-body">Assignments Portal</h3>
-            <p class="small text-muted mb-0">No active assignment submissions pending for your current semester.</p>
+    <!-- Search and Filter Bar -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: var(--surface);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-7">
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background: var(--surface-2); color: var(--muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                    <input type="text" name="q" value="{{ q }}" class="form-control border-0" style="background: var(--surface-2);" placeholder="Search by assignment title or subject...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select border-0" style="background: var(--surface-2);" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+                    <option value="SUBMITTED" {% if status_filter == 'SUBMITTED' %}selected{% endif %}>Submitted</option>
+                    <option value="GRADED" {% if status_filter == 'GRADED' %}selected{% endif %}>Graded</option>
+                    <option value="OVERDUE" {% if status_filter == 'OVERDUE' %}selected{% endif %}>Overdue</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="fa-solid fa-filter me-1"></i> Filter</button>
+                {% if q or status_filter %}
+                <a href="{% url 'student_assignments' %}" class="btn btn-secondary" title="Reset Filters"><i class="fa-solid fa-rotate-left"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Assignments List -->
+    <div class="card border-0 shadow-sm rounded-4 p-4" style="background: var(--surface);">
+        {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 small">
+                <thead>
+                    <tr>
+                        <th>Assignment</th>
+                        <th>Subject</th>
+                        <th>Faculty</th>
+                        <th>Due Date</th>
+                        <th>Max Marks</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-primary">{{ item.assignment.title }}</div>
+                            <small class="text-muted">{{ item.assignment.course.code }} - Semester {{ item.assignment.semester.number }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ item.assignment.subject.name }}</div>
+                            <small class="text-muted">{{ item.assignment.subject.code }}</small>
+                        </td>
+                        <td>{{ item.assignment.faculty.full_name }}</td>
+                        <td>
+                            <div class="fw-semibold {% if item.assignment.is_overdue and not item.submission %}text-danger{% endif %}">
+                                {{ item.assignment.due_date|date:"d M Y, h:i A" }}
+                            </div>
+                        </td>
+                        <td><span class="badge bg-secondary-subtle text-secondary">{{ item.assignment.max_marks }} Marks</span></td>
+                        <td>
+                            <span class="badge {{ item.badge_class }} p-2 px-3">{{ item.display_badge }}</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-2">
+                                <a href="{% url 'assignment_detail' item.assignment.pk %}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fa-solid fa-eye me-1"></i> View
+                                </a>
+                                {% if item.submission %}
+                                    <a href="{% url 'my_submission' item.submission.pk %}" class="btn btn-sm btn-success" title="View My Submission">
+                                        <i class="fa-solid fa-file-check me-1"></i> Submission
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'submit_assignment' item.assignment.pk %}" class="btn btn-sm btn-primary" title="Submit Assignment">
+                                        <i class="fa-solid fa-upload me-1"></i> Submit
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination pagination-sm justify-content-center m-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ q }}&status={{ status_filter }}">Previous</a></li>
+                {% endif %}
+                <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ q }}&status={{ status_filter }}">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fa-solid fa-box-open fa-3x text-muted mb-3"></i>
+            <h5 class="fw-bold">You're all caught up!</h5>
+            <p class="text-muted small">No assignments found matching your criteria.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
