@@ -146,14 +146,35 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 
-# Email
+# Email Configuration
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
+# For development: Defaults to printing emails to the console if SMTP is not configured.
+# For production (Gmail / SMTP): Set environment variables EMAIL_HOST_USER and EMAIL_HOST_PASSWORD.
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend"
+)
+
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
+
+EMAIL_HOST_USER = os.environ.get(
+    "EMAIL_HOST_USER",
+    "urvishpatel008@gmail.com"
+)
+
+EMAIL_HOST_PASSWORD = os.environ.get(
+    "EMAIL_HOST_PASSWORD",
+    "YOUR_NEW_APP_PASSWORD"
+)
+
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    "College ERP <urvishpatel008@gmail.com>"
+)
+
 
 
 LOGIN_URL = "/login/"

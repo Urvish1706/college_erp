@@ -1,6 +1,11 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm,
+    PasswordResetForm,
+    SetPasswordForm,
+)
+
 
 from .models import Profile
 
@@ -112,3 +117,45 @@ class ProfileForm(forms.ModelForm):
             profile.save()
 
         return profile
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+
+    email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Enter your registered email address",
+                "autocomplete": "email",
+            }
+        )
+    )
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email:
+            email = email.strip()
+        return email
+
+
+
+class CustomSetPasswordForm(SetPasswordForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["new_password1"].widget.attrs.update(
+            {
+                "class": "form-control",
+                "placeholder": "Enter new password",
+                "id": "id_new_password1",
+                "autocomplete": "new-password",
+            }
+        )
+        self.fields["new_password2"].widget.attrs.update(
+            {
+                "class": "form-control",
+                "placeholder": "Confirm new password",
+                "id": "id_new_password2",
+                "autocomplete": "new-password",
+            }
+        )
